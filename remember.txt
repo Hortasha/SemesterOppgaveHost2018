@@ -1,0 +1,1 @@
+- More restrictions for game name.
