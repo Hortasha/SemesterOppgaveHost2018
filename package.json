@@ -1,0 +1,26 @@
+{
+  "name": "semesteroppgavehost2018",
+  "version": "1.0.0",
+  "description": "\"Game of Thrones board game\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hortasha/SemesterOppgaveHost2018.git"
+  },
+  "author": "Martin Eide",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hortasha/SemesterOppgaveHost2018/issues"
+  },
+  "homepage": "https://github.com/Hortasha/SemesterOppgaveHost2018#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "socket.io": "^2.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.6"
+  }
+}
