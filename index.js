@@ -28,6 +28,7 @@ io.on('connection', function(socket) {
   socket.on('createGame', function(data) {
     var result = createGame(data);
     if(result) {
+      socket.emit('createGameSuccess', data);
 
     } else {
       socket.emit('createGameFail', data);
