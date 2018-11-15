@@ -1,3 +1,5 @@
+require('isomorphic-fetch');
+
 var port = 3000;
 var express = require('express');
 var socket = require('socket.io');
@@ -16,97 +18,120 @@ var io = socket(server);
 
 //Game Variables
 var lobbys = [];
+var players = [];
+var characters = [];
 
 //Connected
 io.on('connection', function(socket) {
+
 //Connection data
-  var room = "";
-  var player = "";
+  var player = new Player(socket.id);
+  var lobby = "";
+
+  players.push(player);
   console.log('connected', socket.id);
 
 //Disconnected
   socket.on('disconnect', function(){
-    if(room !== "") {
-      for(var i = 0; i < room.players.length; i++) {
-        if(room.players[i].id === socket.id) {
-          room.players.splice(i, 1);
+    if(lobby !== "") {
+      for(var i = 0; i < lobby.players.length; i++) {
+        if(lobby.players[i].id === socket.id) {
+          lobby.players.splice(i, 1);
         }
       }
-      io.to(room.name).emit('enter lobby', room);
+      io.to(lobby.name).emit('refresh lobby', {
+        lobby: lobby
+      });
+    }
+
+    for(var i = 0; i < players.length; i++) {
+      if(players[i].id === socket.id) {
+        players.splice(i, 1);
+      }
     }
     console.log('user disconnected', socket.id);
   });
 
-//Creating game
-  socket.on('create game', function(data) {
-    var result = createGame(data);
-    if(result !== false) {
-      player = new Player(socket.id);
-      lobbys[result].players.push(player);
-      socket.emit('enter lobby', lobbys[result]);
-      socket.join(data.name);
-      room = lobbys[result];
-    } else {
-      socket.emit('create game failed', data);
-    }
+  // Above is only connect and disconnect
+
+  socket.on('refresh index', function() {
+    io.emit('refresh index', {
+      lobbys: lobbys
+    });
   });
 
-  //Requesting lobbys
-  socket.on('request lobbys', function() {
-    socket.emit('recive lobbys', lobbys);
-  });
-
-  //Join Lobby
   socket.on('join lobby', function(data) {
     for(var i = 0; i < lobbys.length; i++) {
-      if (lobbys[i].name === data.name && lobbys[i].maxPlayers > lobbys[i].players.length) {
-        player = new Player(socket.id);
-        lobbys[i].players.push(player);
-        socket.join(data.name);
-        room = lobbys[i];
-        io.to(data.name).emit('enter lobby', lobbys[i]);
+      if(lobbys[i].name === data.lobbyName) {
+        lobby = lobbys[i];
+        lobby.players.push(player);
+        socket.join(data.lobbyName);
+        player.playerNum = lobby.players.length;
+        io.to(lobby.name).emit('refresh lobby', {
+          lobby: lobby
+        });
       }
     }
   });
 
-//Start the game and remove from lobby
-  socket.on('start', function() {
-    io.to(room.name).emit('character selection', room);
-    for(var i = 0; i < lobbys.length; i++) {
-      if(lobbys[i] === room) {
-        lobbys.splice(i, 1);
-      }
+  socket.on('create lobby', function(data) {
+    lobby = new Game(data.lobbyName);
+    lobby.players.push(player);
+    lobbys.push(lobby);
+    socket.join(data.lobbyName);
+    player.playerNum = lobby.players.length;
+    io.to(lobby.name).emit('refresh lobby', {
+      lobby: lobby
+    });
+  });
+
+  socket.on('character selection screen', function() {
+    var characterNames = [{first: "Daenerys", last: "Targaryen"},
+      {first: "Jon", last: "Snow"},
+      {first: "Tyrion", last: "Lannister"},
+      {first: "Sansa", last: "Stark"},
+      {first: "Cersei", last: "Lannister"},
+      {first: "Joffrey", last: "Baratheon"},
+      {first: "Eddard", last: "Stark"},
+      {first: "Arya", last: "Stark"},
+      {first: "Tywin", last: "Lannister"},
+      {first: "Jaime", last: "Lannister"}];
+    for(var i = 0; i < characterNames.length; i++) {
+      getAPI(characterNames[i].first, characterNames[i].last)
+        .then(function (result) {
+          characters.push(new Character(result[0].name));
+          console.log(characters);
+        });
     }
-    room.board = new Board(30);
-    if(room.players[0] === player) {
-      socket.emit('choose character', {
-        room,
-        player
-      });
-    }
+
+    io.to(lobby.name).emit('character selection screen', {
+      lobby: lobby,
+      characters: character
+    });
   });
 });
 
 /**
- ** Functions
+ ** Function
  **/
 
-//Attempt to create game
-function createGame(data) {
-  if (data.name === "") {
-    return false;
-  }
-  if(lobbys.length > 0) {
-    for(var i = 0; i < lobbys.length; i++) {
-      if(data.name === lobbys[i].name) {
-        return false;
-      }
-    }
-  }
+ function getAPI(firstName, lastName) {
+  return new Promise(
+  resolve => {
+    fetch('https://anapioficeandfire.com/api/characters?name=' + firstName + '+' + lastName)
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(myJson) {
+        resolve(myJson);
+      });
+  },
 
-  var newGame = new Game(data.name, data.type);
-  lobbys.push(newGame);
-  return lobbys.length-1;
+  reject => {
+    reject("Not able to fetch API");
+  });
+
+
 }
 
 /**
@@ -114,32 +139,26 @@ function createGame(data) {
  **/
 
  class Game {
-   constructor(name, type) {
+   constructor(name) {
      this.name = name;
-     this.type = type;
-     this.board = {};
      this.players = [];
-     this.dices = 1;
-     this.maxPlayers = 2;
+     this.tiles = 30;
    }
  }
 
  class Player {
    constructor(id) {
      this.id = id;
+     this.playerNum;
      this.character = {};
      this.tile = 1;
    }
  }
 
-class Board {
-  constructor(tiles) {
-    this.tiles = tiles;
-  }
-}
-
-class Tile {
-  constructor() {
-
-  }
-}
+ class Character {
+   constructor(name) {
+     this.name = name;
+     this.selected = false;
+     this.player;
+   }
+ }
