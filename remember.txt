@@ -1,1 +1,3 @@
 - More restrictions for game name.
+- Add animation to code.js - 'execute on player'
+- Remember to delete objects that are no longer in use
