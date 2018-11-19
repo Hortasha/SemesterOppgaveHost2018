@@ -73,6 +73,9 @@ io.on('connection', function(socket) {
         io.to(lobby.name).emit('refresh lobby', {
           lobby: lobby
         });
+        io.emit('refresh index', {
+          lobbys: lobbys
+        });
       }
     }
   });
