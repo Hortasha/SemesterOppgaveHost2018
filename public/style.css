@@ -1,0 +1,74 @@
+@font-face {
+  font-family: Thrones;
+  src: url(GameofThrones.ttf);
+}
+.index__title {
+  font-family: Thrones, Arial;
+  padding: 20px 0 10px;
+}
+.index__underTitle {
+  font-family: Thrones, Arial;
+  padding: 20px 0 10px;
+  font-size: 20px;
+}
+.index__section--split {
+  padding-bottom: 50px;
+}
+.index__button--start {
+  padding: 10px 30px;
+  margin-top: 10px;
+  border: none;
+  cursor: pointer;
+}
+.index__button--lobby {
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  display: block;
+  text-align: left;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.lobby__title {
+  font-family: Thrones, Arial;
+  padding: 20px 0 10px;
+}
+.lobby__underTitle {
+  font-family: Thrones, Arial;
+  padding: 20px 0 10px;
+  font-size: 20px;
+}
+.lobby__button--start {
+  padding: 10px 30px;
+  margin-top: 10px;
+  border: none;
+  cursor: pointer;
+}
+.lobby__button--character {
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  display: block;
+  text-align: left;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.game__title {
+  font-family: Thrones, Arial;
+  padding: 20px 0 10px;
+}
+.game__underTitle {
+  font-family: Thrones, Arial;
+  padding: 20px 0 10px;
+  font-size: 20px;
+}
+.game__button--roll {
+  padding: 10px 30px;
+  margin-top: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+/*# sourceMappingURL=style.css.map */

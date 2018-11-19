@@ -1,0 +1,42 @@
+body {
+  //background-image:url("fire.jpg");
+}
+
+.index {
+  &__title {
+    font-family: $thrones;
+    padding: 20px 0 10px
+  }
+
+  &__underTitle {
+    font-family: $thrones;
+    padding: 20px 0 10px;
+    font-size: 20px;
+  }
+
+  &__section {
+    &--split {
+      padding-bottom: 50px;
+    }
+  }
+
+  &__button {
+
+    &--start {
+      padding: 10px 30px;
+      margin-top: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    &--lobby {
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      display: block;
+      text-align:left;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+  }
+}

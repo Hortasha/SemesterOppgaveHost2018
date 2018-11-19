@@ -11,28 +11,31 @@ var socket = io();
 socket.on('refresh index', function(data) {
   serverList.innerHTML = "";
   for(var i = 0; i < data.lobbys.length; i++) {
-    serverList.innerHTML += "<button onclick='joinLobby(\"" + data.lobbys[i].name + "\")'>" + data.lobbys[i].name + "</button>";
+    serverList.innerHTML += "<div class='[ col-md-4 ]'><button class='[ index__button--lobby ]' onclick='joinLobby(\"" + data.lobbys[i].name + "\")'><strong>Lobby Name:</strong> " + data.lobbys[i].name + "<br><strong>Players:</strong> " + data.lobbys[i].players.length + "</button></div>";
   }
 });
 
 socket.on('refresh lobby', function(data) {
-  body.innerHTML = "<h1>Connected Players</1>";
+  body.innerHTML = "<h2 class='[ lobby__title ]'>Connected Players</2>";
   for(var i = 0; i < data.lobby.players.length; i++) {
-    body.innerHTML += "<p>Player " + (i+1) + ": " + data.lobby.players[i].id + "</p>";
+    body.innerHTML += "<p><strong>Player " + (i+1) + ":</strong> " + data.lobby.players[i].id + "</p>";
   }
-  body.innerHTML += "<button onclick='characterScreen()'>Play</button>";
+  body.innerHTML += "<button class='[ lobby__button--start ]' onclick='characterScreen()'>Play</button>";
 });
 
 socket.emit('refresh index');
 
 socket.on('character selection screen', function(data) {
   if(socket.id === data.lobby.players[0].id) {
-    body.innerHTML = "<h1 id='player'>Your Turn</h1>";
+    body.innerHTML = "<h2 class='lobby__title' id='player'>Your Turn</h2>";
   } else {
-    body.innerHTML = "<h1 id='player'>Player 1</h1>";
+    body.innerHTML = "<h2 class='lobby__title' id='player'>Player 1</h2>";
   }
+  var characterDiv = document.createElement("div");
+  body.appendChild(characterDiv);
+  characterDiv.setAttribute("class", "[ row ]");
   for(var i = 0; i < data.characters.length; i++) {
-    body.innerHTML += "<button id='" + i + "' onclick='selectCharacter(\"" + i + "\")'>" + data.characters[i].name + "</button>";
+    characterDiv.innerHTML += "<div class='[ col-md-4 ]'><button class='[ lobby__button--character ]' id='" + i + "' onclick='selectCharacter(\"" + i + "\")'>" + data.characters[i].name + "</button></div>";
   }
 });
 
@@ -49,15 +52,14 @@ socket.on('next character select', function(data) {
 
 socket.on('start game', function(data) {
   if(socket.id === data.lobby.players[0].id) {
-    body.innerHTML = "<h1 id='player'>Your Turn</h1>";
+    body.innerHTML = "<h2 class='[ game__title ]' id='player'>Your Turn</h2>";
   } else {
-    body.innerHTML = "<h1 id='player'>Player 1</h1>";
+    body.innerHTML = "<h2 class='[ game__title ]' id='player'>Player 1</h2>";
   }
-  body.innerHTML += "<button id='dice' onclick='rollDice()'>Roll</button>";
+  body.innerHTML += "<button class='[ game__button--roll ]' id='dice' onclick='rollDice()'>Roll</button>";
 });
 
 socket.on('move player', function(data) {
-  console.log(data.player);
   //Animate movement to tile
   if(data.player.id === socket.id) {
     console.log('You moved to position ' + data.player.tile);
@@ -82,9 +84,9 @@ socket.on('next turn', function(data) {
 
 socket.on('winning', function(data) {
   if(data.player.id === socket.id) {
-    body.innerHTML = "<h1>You Won!</h1>";
+    body.innerHTML = "<h2 class='[ game__title ]'>You Won!</h2>";
   } else {
-    body.innerHTML = '<h1>Player ' + data.player.playerNum + ': ' + data.player.character.name + ' wins</h1>';
+    body.innerHTML = '<h2 class="[ game__title ]">Player ' + data.player.playerNum + ': ' + data.player.character.name + ' wins</h2>';
   }
 });
 
