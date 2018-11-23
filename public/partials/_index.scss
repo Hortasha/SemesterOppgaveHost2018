@@ -2,14 +2,10 @@ body, html {
   height: 100%;
 }
 
-* {
-  box-sizing: border-box;
-}
-
 .background {
   background-image:url("background.jpg");
   background-position: top;
-  background-repeat: 0;
+  background-repeat: no-repeat;
   background-size: cover;
   position: fixed;
   z-index: 1;
@@ -25,17 +21,19 @@ body, html {
 }
 
 .container {
-  position: fixed;
+  position: relative;
   left: 0;
   right: 0;
   z-index: 9999;
+  text-align: center;
 }
 
 .index {
   &__title {
     font-family: $thrones;
     padding: 20px 0 10px;
-    text-shadow: 2px 2px 3px #fff;
+    background-color: rgba(200, 200, 200, 0.6);
+    border-radius: 50px;
   }
 
   &__underTitle {
@@ -58,6 +56,7 @@ body, html {
       margin-top: 10px;
       border: none;
       cursor: pointer;
+      border-radius: 10px;
     }
 
     &--lobby {
@@ -68,6 +67,7 @@ body, html {
       text-align:left;
       padding: 20px;
       margin-bottom: 30px;
+      border-radius: 10px;
     }
   }
 }

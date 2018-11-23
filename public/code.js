@@ -1,9 +1,27 @@
 //Variables
-//Elements
+//index
 var gameName = document.getElementById("gameName");
 var serverList = document.getElementById("serverList");
 var body = document.getElementById("body");
 var lobbyButtons = document.getElementsByClassName("lobby");
+
+
+//game
+var canvas;
+var parent;
+var context;
+
+
+var position = 0;
+var tile = 0;
+
+//Resize canvas if exist
+window.onresize = function() {
+  if(canvas !== null) {
+    canvas.width = parent.offsetWidth-33;
+    drawBoard();
+  }
+};
 
 //Socket
 var socket = io();
@@ -51,26 +69,116 @@ socket.on('next character select', function(data) {
 });
 
 socket.on('start game', function(data) {
+  body.innerHTML = "";
+
+  //Row 1
+  var contentDiv1 = document.createElement("div");
+  body.appendChild(contentDiv1);
+  contentDiv1.setAttribute("class", "[ row ][ game__row ]");
+
   if(socket.id === data.lobby.players[0].id) {
-    body.innerHTML = "<h2 class='[ game__title ]' id='player'>Your Turn</h2>";
+    contentDiv1.innerHTML = "<div class'[ col-md-12 ]'><h2 class='[ game__title ]' id='player'>Your Turn</h2></div>";
   } else {
-    body.innerHTML = "<h2 class='[ game__title ]' id='player'>Player 1</h2>";
+    contentDiv1.innerHTML = "<div class'[ col-md-12 ]'><h2 class='[ game__title ]' id='player'>Player 1</h2></div>";
   }
-  body.innerHTML += "<button class='[ game__button--roll ]' id='dice' onclick='rollDice()'>Roll</button>";
+  contentDiv1.innerHTML += "<div class='[ col-md-12 ][ game__background ]'><h3 class='[ game__underTitle ]'>Player positions</h3><p id='playerPos'></p></div>";
+
+  //Row 2
+  var contentDiv2 = document.createElement("div");
+  body.appendChild(contentDiv2);
+  contentDiv2.setAttribute("class", "[ row ][ game__row ][ game__background ]");
+
+  contentDiv2.innerHTML = "<div class='[ col-md-12 ]'><h3 class='[ game__underTitle ]'>Board</h3></div><div class='[ col-md-12 ]' id='canvasParent'><img src='50.png' id='playerIcon' alt='player icon'><canvas id='canvas'></canvas></div>";
+
+
+  //Row 3
+  var contentDiv3 = document.createElement("div");
+  body.appendChild(contentDiv3);
+  contentDiv3.setAttribute("class", "[ row ][ game__row ]");
+  contentDiv3.innerHTML = "<div class='[ col-md-12 ]'><div class='[ game__rollDisplay ]'><h2 id='rollValue'>0</h2></div><button class='[ game__button--roll ]' id='dice' onclick='rollDice()'>Roll</button></div>";
+
+  //get dom elements
+  var playerPos = document.getElementById("playerPos");
+  var playerIcon = document.getElementById("playerIcon");
+
+  //Draw Canvas
+  canvas = document.getElementById("canvas");
+  parent = document.getElementById("canvasParent");
+  context = canvas.getContext("2d");
+
+  canvas.width = parent.offsetWidth-33;
+  canvas.height = 50;
+  drawBoard();
+
+  //Player 1 setup
+  playerIcon.src = "50.png";
+
+  var sortedPlayers = data.lobby.players;
+  sortedPlayers.sort(function(a, b) {
+    return b.tile - a.tile;
+  });
+
+  playerPos.innerHTML = "";
+  for(var i = 0; i < sortedPlayers.length; i++) {
+    if(sortedPlayers[i].id === socket.id) {
+      playerPos.innerHTML += "<strong>You:</strong> Tile " + sortedPlayers[i].tile + " ";
+    } else {
+      playerPos.innerHTML += "<strong>Player " + sortedPlayers[i].playerNum + ":</strong> Tile " + sortedPlayers[i].tile + " ";
+    }
+  }
+
 });
 
 socket.on('move player', function(data) {
-  //Animate movement to tile
+
+  var sortedPlayers = data.lobby.players;
+  sortedPlayers.sort(function(a, b) {
+    return b.tile - a.tile;
+  });
+
+  playerPos.innerHTML = "";
+  for(var i = 0; i < sortedPlayers.length; i++) {
+    if(sortedPlayers[i].id === socket.id) {
+      playerPos.innerHTML += "<strong>You:</strong> Tile " + sortedPlayers[i].tile + " ";
+    } else {
+      playerPos.innerHTML += "<strong>Player " + sortedPlayers[i].playerNum + ":</strong> Tile " + sortedPlayers[i].tile + " ";
+    }
+  }
+
   if(data.player.id === socket.id) {
     console.log('You moved to position ' + data.player.tile);
   } else {
     console.log('Player ' + data.player.playerNum + ': ' + data.player.character.name + ' moved to position ' + data.player.tile);
   }
-  socket.emit('check tile', data);
+
+
+  //Animate movement to tile
+  if(data.dice === 0) {
+    tile = data.player.tile-1;
+    drawBoard();
+    socket.emit('check tile', data);
+  } else {
+    var i = 0;
+    function animateCalls() {
+      setTimeout(function() {
+        animateBoard();
+        if(i < data.dice-1) {
+          animateCalls();
+        } else {
+          socket.emit('check tile', data);
+        }
+        i++;
+        tile++;
+      }, 700);
+    }
+    animateCalls();
+  }
 });
 
 socket.on('next turn', function(data) {
   var heading = document.getElementById('player');
+  var playerIcon = document.getElementById("playerIcon");
+
   if(data.player.id === socket.id) {
     heading.innerHTML = "Your Turn";
   } else {
@@ -80,6 +188,11 @@ socket.on('next turn', function(data) {
       }
     }
   }
+
+  //playerIcon.src = "50.png";
+
+  tile = data.player.tile-1;
+  drawBoard();
 });
 
 socket.on('winning', function(data) {
@@ -126,5 +239,56 @@ function rollDice() {
     socket.emit('roll', {
       playerId: socket.id
     });
+  }
+}
+
+function drawBoard() {
+  if(canvas.getContext) {
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    //Stroke
+    for(var i = tile-1; i < 30; i++) {
+      context.beginPath();
+      context.rect((i-tile+1)*50, 0, 50, 50);
+      context.closePath();
+      context.stroke();
+      context.font = "20px Arial";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(i+1, (i-tile)*50+25, 25);
+    }
+
+  } else {
+    alert("Youre browser does not support canvas");
+  }
+}
+
+function animateBoard() {
+  if(canvas.getContext) {
+
+    var animation = requestAnimationFrame(animateBoard);
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    position -= 2;
+
+    //Stroke
+    for(var i = tile-1; i < 30; i++) {
+      context.beginPath();
+      context.rect((i-tile+1)*50+position, 0, 50, 50);
+      context.closePath();
+      context.stroke();
+      context.font = "20px Arial";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(i+1, (i-tile+1)*50+25+position, 25);
+    }
+
+    if(position === -50) {
+      cancelAnimationFrame(animation);
+      position = 0;
+    }
+
+  } else {
+    alert("Youre browser does not support canvas");
   }
 }

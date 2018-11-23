@@ -168,7 +168,9 @@ io.on('connection', function(socket) {
     }
 
     io.to(lobby.name).emit('move player', {
-      player: player
+      lobby: lobby,
+      player: player,
+      dice: rollAmount
     });
   });
 
@@ -234,7 +236,9 @@ io.on('connection', function(socket) {
       }
 
       socket.emit('move player', {
-        player: next
+        lobby: lobby,
+        player: next,
+        dice: 0
       });
     }
   });
@@ -327,7 +331,7 @@ tiles.push("");                   //18
 tiles.push("");                   //19
 tiles.push(new Tile(1, "="));     //20
 tiles.push("");                   //21
-tiles.push(new Tile(2, "-"));     //22
+tiles.push(new Tile(4, "-"));     //22
 tiles.push("");                   //23
 tiles.push("");                   //24
 tiles.push("");                   //25

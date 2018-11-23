@@ -3,12 +3,12 @@ var parent = document.getElementById("canvasParent");
 var context = canvas.getContext("2d");
 //Set size
 canvas.width = parent.offsetWidth-33;
-canvas.height = 100;
+canvas.height = 50;
 
 var position = 0;
 var tile = 5;
 
-window.onresize = function(event) {
+window.onresize = function() {
     canvas.width = parent.offsetWidth-33;
     drawBoard();
 };
@@ -25,13 +25,13 @@ function drawBoard() {
     //Stroke
     for(var i = tile-1; i < 30; i++) {
       context.beginPath();
-      context.rect((i-tile+1)*100, 0, 100, 100);
+      context.rect((i-tile+1)*50, 0, 50, 50);
       context.closePath();
       context.stroke();
-      context.font = "30px Arial";
+      context.font = "20px Arial";
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillText(i+1, (i-tile+1)*100+50, 50);
+      context.fillText(i+1, (i-tile+1)*50+25, 25);
     }
 
   } else {
@@ -45,21 +45,21 @@ function animateBoard() {
     var animation = requestAnimationFrame(animateBoard);
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    position -= 2;
-    
+    position -= 5;
+
     //Stroke
     for(var i = tile-1; i < 30; i++) {
       context.beginPath();
-      context.rect((i-tile+1)*100+position, 0, 100, 100);
+      context.rect((i-tile+1)*50+position, 0, 50, 50);
       context.closePath();
       context.stroke();
-      context.font = "30px Arial";
+      context.font = "20px Arial";
       context.textAlign = "center";
       context.textBaseline = "middle";
-      context.fillText(i+1, (i-tile+1)*100+50+position, 50);
+      context.fillText(i+1, (i-tile+1)*50+25+position, 25);
     }
 
-    if(position === -100) {
+    if(position === -50) {
       cancelAnimationFrame(animation);
       position = 0;
     }

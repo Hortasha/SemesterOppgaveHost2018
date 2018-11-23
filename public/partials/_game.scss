@@ -1,14 +1,16 @@
 
 .game {
   &__title {
-    font-family: $thrones;
-    padding: 20px 0 10px
+    font-family: Thrones, Arial;
+    padding: 20px 0 10px;
+    text-align: center;
   }
 
   &__underTitle {
-    font-family: $thrones;
+    font-family: Thrones, Arial;
     padding: 20px 0 10px;
     font-size: 20px;
+    text-align: center;
   }
 
   &__button {
@@ -18,6 +20,33 @@
       margin-top: 10px;
       border: none;
       cursor: pointer;
+      margin-bottom: 10px;
+      border-radius: 10px;
     }
+  }
+
+  &__rollDisplay {
+    padding: 15px 0;
+    background-color: white;
+    border-radius: 5px;
+    width: 85px;
+    text-align: center;
+  }
+
+  &__row {
+    margin-bottom: 50px;
+    text-align: left;
+  }
+
+  &__background {
+    background-color: rgba(200, 200, 200, 0.6);
+    border-radius: 50px;
+    padding-bottom: 20px;
+  }
+
+  &__player {
+    height: 50px;
+    width: 50px;
+    margin-top: -5px;
   }
 }

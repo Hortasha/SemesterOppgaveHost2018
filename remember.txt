@@ -1,6 +1,31 @@
 - More restrictions for game name.
+- Maximum players - 10
 - Add animation to code.js - 'execute on player'
 - Remember to delete objects that are no longer in use
+- Disconnect during game solution?!
+
 
 Sources:
 https://fontmeme.com/fonts/game-of-thrones-font/
+
+
+Questions:
+Board character image suggestions icons/pictures
+Pictures on selection screen
+Project time management
+Task access - moodle
+
+
+Project walkthrough
+- Code
+* Server
+* Client
+* Canvas
+
+
+- Design
+* Responsive
+* Animation on movement
+* Player positions info available at all times
+* Will display view of whatever player that currently have the turn.
+* Planned dice roll "animation"

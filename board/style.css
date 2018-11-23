@@ -30,3 +30,9 @@
 .game__row {
   margin-bottom: 50px;
 }
+
+.game__player {
+  height: 50px;
+  width: 50px;
+  margin-top: -5px;
+}
