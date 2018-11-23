@@ -17,7 +17,7 @@ var tile = 0;
 
 //Resize canvas if exist
 window.onresize = function() {
-  if(canvas !== null) {
+  if(canvas !== undefined) {
     canvas.width = parent.offsetWidth-33;
     drawBoard();
   }
@@ -77,9 +77,9 @@ socket.on('start game', function(data) {
   contentDiv1.setAttribute("class", "[ row ][ game__row ]");
 
   if(socket.id === data.lobby.players[0].id) {
-    contentDiv1.innerHTML = "<div class'[ col-md-12 ]'><h2 class='[ game__title ]' id='player'>Your Turn</h2></div>";
+    contentDiv1.innerHTML = "<div class='[ col-md-12 ]'><h2 class='[ game__title ]' id='player'>Your Turn</h2></div>";
   } else {
-    contentDiv1.innerHTML = "<div class'[ col-md-12 ]'><h2 class='[ game__title ]' id='player'>Player 1</h2></div>";
+    contentDiv1.innerHTML = "<div class='[ col-md-12 ]'><h2 class='[ game__title ]' id='player'>" + data.lobby.players[0].character.name + "</h2></div>";
   }
   contentDiv1.innerHTML += "<div class='[ col-md-12 ][ game__background ]'><h3 class='[ game__underTitle ]'>Player positions</h3><p id='playerPos'></p></div>";
 
@@ -88,13 +88,13 @@ socket.on('start game', function(data) {
   body.appendChild(contentDiv2);
   contentDiv2.setAttribute("class", "[ row ][ game__row ][ game__background ]");
 
-  contentDiv2.innerHTML = "<div class='[ col-md-12 ]'><h3 class='[ game__underTitle ]'>Board</h3></div><div class='[ col-md-12 ]' id='canvasParent'><img src='50.png' id='playerIcon' alt='player icon'><canvas id='canvas'></canvas></div>";
+  contentDiv2.innerHTML = "<div class='[ col-md-12 ]'><h3 class='[ game__underTitle ]'>Board</h3></div><div class='[ col-md-12 ]' id='canvasParent'><img src='50.png' id='playerIcon' width='50px' alt='player icon'><canvas id='canvas'></canvas></div>";
 
 
   //Row 3
   var contentDiv3 = document.createElement("div");
   body.appendChild(contentDiv3);
-  contentDiv3.setAttribute("class", "[ row ][ game__row ]");
+  contentDiv3.setAttribute("class", "[ row ][ game__rowEnd ]");
   contentDiv3.innerHTML = "<div class='[ col-md-12 ]'><div class='[ game__rollDisplay ]'><h2 id='rollValue'>0</h2></div><button class='[ game__button--roll ]' id='dice' onclick='rollDice()'>Roll</button></div>";
 
   //get dom elements
@@ -123,14 +123,15 @@ socket.on('start game', function(data) {
     if(sortedPlayers[i].id === socket.id) {
       playerPos.innerHTML += "<strong>You:</strong> Tile " + sortedPlayers[i].tile + " ";
     } else {
-      playerPos.innerHTML += "<strong>Player " + sortedPlayers[i].playerNum + ":</strong> Tile " + sortedPlayers[i].tile + " ";
+      playerPos.innerHTML += "<strong>" + sortedPlayers[i].character.name + ":</strong> Tile " + sortedPlayers[i].tile + " ";
     }
   }
 
 });
 
 socket.on('move player', function(data) {
-
+  var dice = document.getElementById("rollValue");
+  dice.innerHTML = data.dice;
   var sortedPlayers = data.lobby.players;
   sortedPlayers.sort(function(a, b) {
     return b.tile - a.tile;
@@ -141,14 +142,14 @@ socket.on('move player', function(data) {
     if(sortedPlayers[i].id === socket.id) {
       playerPos.innerHTML += "<strong>You:</strong> Tile " + sortedPlayers[i].tile + " ";
     } else {
-      playerPos.innerHTML += "<strong>Player " + sortedPlayers[i].playerNum + ":</strong> Tile " + sortedPlayers[i].tile + " ";
+      playerPos.innerHTML += "<strong>" + sortedPlayers[i].character.name + ":</strong> Tile " + sortedPlayers[i].tile + " ";
     }
   }
 
   if(data.player.id === socket.id) {
     console.log('You moved to position ' + data.player.tile);
   } else {
-    console.log('Player ' + data.player.playerNum + ': ' + data.player.character.name + ' moved to position ' + data.player.tile);
+    console.log('Player ' + data.player.character.name + ': ' + data.player.character.name + ' moved to position ' + data.player.tile);
   }
 
 
@@ -161,38 +162,45 @@ socket.on('move player', function(data) {
     var i = 0;
     function animateCalls() {
       setTimeout(function() {
-        animateBoard();
-        if(i < data.dice-1) {
+        if(i < data.dice) {
+          animateBoard();
           animateCalls();
         } else {
           socket.emit('check tile', data);
         }
         i++;
         tile++;
-      }, 700);
+      }, 600);
     }
     animateCalls();
   }
 });
 
 socket.on('next turn', function(data) {
+  //variables
   var heading = document.getElementById('player');
   var playerIcon = document.getElementById("playerIcon");
 
-  if(data.player.id === socket.id) {
-    heading.innerHTML = "Your Turn";
-  } else {
-    for(var i = 0; i < data.lobby.players.length; i++) {
-      if(data.lobby.players[i].id === socket.id) {
-        heading.innerHTML = "Player " + data.lobby.players[i].playerNum;
+  //display next turn text
+  displayNext(data.player);
+
+  setTimeout(function() {
+    //Change data
+    if(data.player.id === socket.id) {
+      heading.innerHTML = "Your Turn";
+    } else {
+      for(var i = 0; i < data.lobby.players.length; i++) {
+        if(data.lobby.players[i].id === socket.id) {
+          heading.innerHTML = data.lobby.players[i].character.name;
+        }
       }
     }
-  }
 
-  //playerIcon.src = "50.png";
+    tile = data.player.tile-1;
+    drawBoard();
 
-  tile = data.player.tile-1;
-  drawBoard();
+    //playerIcon.src = "50.png";
+  }, 2000);
 });
 
 socket.on('winning', function(data) {
@@ -234,22 +242,35 @@ function selectCharacter(character) {
 
 function rollDice() {
   var turn = document.getElementById("player");
+  var dice = document.getElementById("rollValue");
+
   if (turn.innerHTML === "Your Turn") {
-    turn.innerHTML = "Moving";
-    socket.emit('roll', {
-      playerId: socket.id
-    });
+    var i = 0;
+    function roll() {
+      setTimeout(function() {
+        if(i < 10) {
+          dice.innerHTML = Math.floor(Math.random() * 6) + 1;
+          roll();
+        } else {
+          turn.innerHTML = "Moving";
+          socket.emit('roll', {
+            playerId: socket.id
+          });
+        }
+        i++;
+      }, 100);
+    }
+    roll();
   }
 }
 
 function drawBoard() {
   if(canvas.getContext) {
-
     context.clearRect(0, 0, canvas.width, canvas.height);
     //Stroke
     for(var i = tile-1; i < 30; i++) {
       context.beginPath();
-      context.rect((i-tile+1)*50, 0, 50, 50);
+      context.rect((i-tile)*50, 0, 50, 50);
       context.closePath();
       context.stroke();
       context.font = "20px Arial";
@@ -269,7 +290,7 @@ function animateBoard() {
     var animation = requestAnimationFrame(animateBoard);
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    position -= 2;
+    position -= 5;
 
     //Stroke
     for(var i = tile-1; i < 30; i++) {
@@ -288,6 +309,18 @@ function animateBoard() {
       position = 0;
     }
 
+  } else {
+    alert("Youre browser does not support canvas");
+  }
+}
+
+function displayNext(player) {
+  if(canvas.getContext) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = "40px Arial";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(player.character.name, canvas.width/2, 25);
   } else {
     alert("Youre browser does not support canvas");
   }
