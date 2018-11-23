@@ -1,6 +1,5 @@
 - More restrictions for game name.
 - Maximum players - 10
-- Add animation to code.js - 'execute on player'
 - Remember to delete objects that are no longer in use
 - Disconnect during game solution?!
 

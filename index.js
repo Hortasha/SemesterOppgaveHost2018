@@ -268,8 +268,9 @@ io.on('connection', function(socket) {
  }
 
  class Character {
-   constructor(name) {
+   constructor(name, icon) {
      this.name = name;
+     this.icon = icon;
    }
  }
 
@@ -302,7 +303,7 @@ io.on('connection', function(socket) {
  for(var i = 0; i < characterNames.length; i++) {
    getAPI(characterNames[i].first, characterNames[i].last)
      .then(function (result) {
-       characters.push(new Character(result[0].name));
+       characters.push(new Character(result[0].name, characterNames.first + ".png"));
      });
  }
 

@@ -19,6 +19,11 @@
       border: none;
       cursor: pointer;
       border-radius: 10px;
+      background-color: $buttonColor;
+
+      &:hover {
+        background-color: darken($buttonColor, 20%);
+      }
     }
 
     &--character {
