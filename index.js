@@ -300,10 +300,10 @@ io.on('connection', function(socket) {
    {first: "Tywin", last: "Lannister"},
    {first: "Jaime", last: "Lannister"}];
 
- for(var i = 0; i < characterNames.length; i++) {
+ for(let i = 0; i < characterNames.length; i++) {
    getAPI(characterNames[i].first, characterNames[i].last)
      .then(function (result) {
-       characters.push(new Character(result[0].name, characterNames.first + ".png"));
+       characters.push(new Character(result[0].name, characterNames[i].first + ".png"));
      });
  }
 

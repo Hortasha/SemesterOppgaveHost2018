@@ -15,16 +15,8 @@ Project time management
 Task access - moodle
 
 
-Project walkthrough
-- Code
-* Server
-* Client
-* Canvas
-
-
-- Design
-* Responsive
-* Animation on movement
-* Player positions info available at all times
-* Will display view of whatever player that currently have the turn.
-* Planned dice roll "animation"
+Character selection:
+Icon
+Name
+Story
+Age/Gender/House

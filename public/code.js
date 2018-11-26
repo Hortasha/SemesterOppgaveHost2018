@@ -88,7 +88,7 @@ socket.on('start game', function(data) {
   body.appendChild(contentDiv2);
   contentDiv2.setAttribute("class", "[ row ][ game__row ][ game__background ]");
 
-  contentDiv2.innerHTML = "<div class='[ col-md-12 ]'><h3 class='[ game__underTitle ]'>Board</h3></div><div class='[ col-md-12 ]' id='canvasParent'><img src='50.png' id='playerIcon' width='50px' alt='player icon'><canvas id='canvas'></canvas></div>";
+  contentDiv2.innerHTML = "<div class='[ col-md-12 ]'><h3 class='[ game__underTitle ]'>Board</h3></div><div class='[ col-md-12 ]' id='canvasParent'><img src=\'" + data.lobby.players[0].character.icon + "\' id='playerIcon' width='50px' alt='player icon'><canvas id='canvas'></canvas></div>";
 
 
   //Row 3
@@ -111,7 +111,6 @@ socket.on('start game', function(data) {
   drawBoard();
 
   //Player 1 setup
-  playerIcon.src = "50.png";
 
   var sortedPlayers = data.lobby.players;
   sortedPlayers.sort(function(a, b) {
@@ -198,8 +197,7 @@ socket.on('next turn', function(data) {
 
     tile = data.player.tile-1;
     drawBoard();
-
-    //playerIcon.src = "50.png";
+    playerIcon.src = data.player.character.icon;
   }, 2000);
 });
 
@@ -317,7 +315,7 @@ function animateBoard() {
 function displayNext(player) {
   if(canvas.getContext) {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.font = "40px Arial";
+    context.font = "20px Thrones";
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(player.character.name, canvas.width/2, 25);
