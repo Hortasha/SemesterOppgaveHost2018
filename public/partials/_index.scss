@@ -32,8 +32,6 @@ body, html {
   &__title {
     font-family: $thrones;
     padding: 20px 0 10px;
-    background-color: rgba(200, 200, 200, 0.6);
-    border-radius: 20px;
   }
 
   &__underTitle {
@@ -71,8 +69,29 @@ body, html {
       display: block;
       text-align:left;
       padding: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 10px;
+      margin-top: 10px;
       border-radius: 10px;
     }
+  }
+
+  &__joinGame {
+    border-radius: 10px;
+    padding: 1px 20px;
+    display: block;
+    margin: 0 auto;
+    background-color: rgba(200, 200, 200, 0.6);
+  }
+
+  &__serverList {
+    background-color: #404040;
+    margin: 0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    padding: 10px;
+  }
+
+  &__error {
+    color: #ff3232;
   }
 }

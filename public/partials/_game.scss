@@ -29,6 +29,16 @@
         background-color: darken($buttonColor, 20%);
       }
     }
+
+    &--rollInactive {
+      padding: 10px 30px;
+      margin-top: 10px;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      margin-right: 20px;
+    }
   }
 
   &__rollDisplay {

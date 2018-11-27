@@ -37,12 +37,27 @@ io.on('connection', function(socket) {
           lobby.players.splice(i, 1);
         }
       }
+      if(lobby !== "") {
+        if(lobby.players.length < 1) {
+          for(var i = 0; i < lobbys.length; i++) {
+            if(lobbys[i] === lobby) {
+              lobbys.splice(i, 1);
+            }
+          }
+        }
+      }
 
 //Refresh player lobby after a disconnect
       io.to(lobby.name).emit('refresh lobby', {
         lobby: lobby
       });
+
+      io.emit('refresh index', {
+        lobbys: lobbys
+      });
     }
+
+//If there are no players in the lobby, remove the lobby
     console.log('user disconnected', socket.id);
   });
 
@@ -53,6 +68,7 @@ io.on('connection', function(socket) {
       lobbys: lobbys
     });
   });
+
 
   /**
    ** Client requesting to join lobby
@@ -91,14 +107,27 @@ io.on('connection', function(socket) {
    **/
 
   socket.on('create lobby', function(data) {
-    lobby = new Game(data.lobbyName);
-    lobby.players.push(player);
-    lobbys.push(lobby);
-    socket.join(data.lobbyName);
-    player.playerNum = lobby.players.length;
-    io.to(lobby.name).emit('refresh lobby', {
-      lobby: lobby
-    });
+    var valid = true;
+    if(data.lobbyName === "") {
+      valid = false;
+    }
+
+    for(var i = 0; i < lobbys.length; i++) {
+      if(lobbys[i].name === data.lobbyName) {
+        valid = false;
+      }
+    }
+
+    if(valid === true) {
+      lobby = new Game(data.lobbyName);
+      lobby.players.push(player);
+      lobbys.push(lobby);
+      socket.join(data.lobbyName);
+      player.playerNum = lobby.players.length;
+      io.to(lobby.name).emit('refresh lobby', {
+        lobby: lobby
+      });
+    }
   });
 
   /**
@@ -109,11 +138,6 @@ io.on('connection', function(socket) {
    **/
 
   socket.on('character selection screen', function() {
-    for(var i = 0; i < lobbys.length; i++) {
-      if(lobbys[i] === lobby) {
-        lobbys.splice(i, 1);
-      }
-    }
 
     io.emit('refresh index', {
       lobbys: lobbys
@@ -268,9 +292,12 @@ io.on('connection', function(socket) {
  }
 
  class Character {
-   constructor(name, icon) {
+   constructor(name, icon, sex, aliases) {
      this.name = name;
      this.icon = icon;
+     this.sex = sex;
+     this.aliases = aliases;
+
    }
  }
 
@@ -303,7 +330,7 @@ io.on('connection', function(socket) {
  for(let i = 0; i < characterNames.length; i++) {
    getAPI(characterNames[i].first, characterNames[i].last)
      .then(function (result) {
-       characters.push(new Character(result[0].name, characterNames[i].first + ".png"));
+       characters.push(new Character(result[0].name, characterNames[i].first + ".png", result[0].gender, result[0].aliases));
      });
  }
 

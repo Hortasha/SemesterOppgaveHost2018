@@ -29,15 +29,24 @@ var socket = io();
 socket.on('refresh index', function(data) {
   serverList.innerHTML = "";
   for(var i = 0; i < data.lobbys.length; i++) {
-    serverList.innerHTML += "<div class='[ col-md-4 ]'><button class='[ index__button--lobby ]' onclick='joinLobby(\"" + data.lobbys[i].name + "\")'><strong>Lobby Name:</strong> " + data.lobbys[i].name + "<br><strong>Players:</strong> " + data.lobbys[i].players.length + "</button></div>";
+    if(data.lobbys[i].players.length !== 10) {
+      serverList.innerHTML += "<div class='[ col-md-4 ]'><button class='[ index__button--lobby ]' onclick='joinLobby(\"" + data.lobbys[i].name + "\")'><strong>Lobby Name:</strong> " + data.lobbys[i].name + "<br><strong>Players:</strong> " + data.lobbys[i].players.length + "</button></div>";
+    }
+  }
+  if(data.lobbys.length < 1) {
+    serverList.innerHTML = "<p class='[ index__error ]'>No games availeble, create a new game</p>";
   }
 });
 
 socket.on('refresh lobby', function(data) {
   body.innerHTML = "<h2 class='[ lobby__title ]'>Connected Players</2>";
+
+  var playerConnections = document.createElement("div");
+  playerConnections.setAttribute("class", "[ lobby__backgroundContainer ]");
   for(var i = 0; i < data.lobby.players.length; i++) {
-    body.innerHTML += "<p><strong>Player " + (i+1) + ":</strong> " + data.lobby.players[i].id + "</p>";
+    playerConnections.innerHTML += "<p><strong>Player " + (i+1) + ":</strong> " + data.lobby.players[i].id + "</p>";
   }
+  body.appendChild(playerConnections);
   body.innerHTML += "<button class='[ lobby__button--start ]' onclick='characterScreen()'>Play</button>";
 });
 
@@ -53,7 +62,23 @@ socket.on('character selection screen', function(data) {
   body.appendChild(characterDiv);
   characterDiv.setAttribute("class", "[ row ]");
   for(var i = 0; i < data.characters.length; i++) {
-    characterDiv.innerHTML += "<div class='[ col-md-4 ]'><button class='[ lobby__button--character ]' id='" + i + "' onclick='selectCharacter(\"" + i + "\")'>" + data.characters[i].name + "</button></div>";
+    characterDiv.innerHTML += "<div class='[ col-md-4 ]'><button class='[ lobby__button--character ]' id='" + i + "' onclick='selectCharacter(\"" + i + "\")'><p><strong>Name: </strong>" + data.characters[i].name + "</p><p><strong>Piece: </strong><img src=\"" + data.characters[i].icon + "\" alt=\"" + data.characters[i].name + "\"></img></p><p><strong>Gender: </strong>" + data.characters[i].sex + "</p></button></div>";
+
+    //Adding aliases
+    var characterButton = document.getElementById(i);
+
+    var aliases = document.createElement("p");
+    characterButton.appendChild(aliases);
+    aliases.innerHTML = "<strong>Aliases: </strong><br>";
+
+    for(var j = 0; j < data.characters[i].aliases.length; j++) {
+      if(j === 0) {
+        aliases.innerHTML += data.characters[i].aliases[j];
+      } else {
+        aliases.innerHTML += ", " + data.characters[i].aliases[j];
+      }
+    }
+
   }
 });
 
@@ -95,7 +120,7 @@ socket.on('start game', function(data) {
   var contentDiv3 = document.createElement("div");
   body.appendChild(contentDiv3);
   contentDiv3.setAttribute("class", "[ row ][ game__rowEnd ]");
-  contentDiv3.innerHTML = "<div class='[ col-md-12 ]'><div class='[ game__rollDisplay ]'><h2 id='rollValue'>0</h2></div><button class='[ game__button--roll ]' id='dice' onclick='rollDice()'>Roll</button></div>";
+  contentDiv3.innerHTML = "<div class='[ col-md-12 ]'><div class='[ game__rollDisplay ]'><h2 id='rollValue'>0</h2></div><button class='[ game__button--rollInactive ]' id='dice' onclick='rollDice()'>Roll</button></div>";
 
   //get dom elements
   var playerPos = document.getElementById("playerPos");
@@ -126,6 +151,10 @@ socket.on('start game', function(data) {
     }
   }
 
+  if(data.lobby.players[0].id === socket.id) {
+    var rollButton = document.getElementById("dice");
+    rollButton.setAttribute("class", "[ game__button--roll ]");
+  }
 });
 
 socket.on('move player', function(data) {
@@ -145,18 +174,13 @@ socket.on('move player', function(data) {
     }
   }
 
-  if(data.player.id === socket.id) {
-    console.log('You moved to position ' + data.player.tile);
-  } else {
-    console.log('Player ' + data.player.character.name + ': ' + data.player.character.name + ' moved to position ' + data.player.tile);
-  }
-
-
   //Animate movement to tile
   if(data.dice === 0) {
     tile = data.player.tile-1;
     drawBoard();
-    socket.emit('check tile', data);
+    setTimeout(function() {
+      socket.emit('check tile', data);
+    }, 1000);
   } else {
     var i = 0;
     function animateCalls() {
@@ -176,9 +200,11 @@ socket.on('move player', function(data) {
 });
 
 socket.on('next turn', function(data) {
+
   //variables
   var heading = document.getElementById('player');
   var playerIcon = document.getElementById("playerIcon");
+  var rollButton = document.getElementById("dice");
 
   //display next turn text
   displayNext(data.player);
@@ -198,6 +224,9 @@ socket.on('next turn', function(data) {
     tile = data.player.tile-1;
     drawBoard();
     playerIcon.src = data.player.character.icon;
+    if(data.player.id === socket.id) {
+      rollButton.setAttribute("class", "[ game__button--roll ]");
+    }
   }, 2000);
 });
 
@@ -241,7 +270,8 @@ function selectCharacter(character) {
 function rollDice() {
   var turn = document.getElementById("player");
   var dice = document.getElementById("rollValue");
-
+  var rollButton = document.getElementById("dice");
+  rollButton.setAttribute("class", "[ game__button--rollInactive ]");
   if (turn.innerHTML === "Your Turn") {
     var i = 0;
     function roll() {

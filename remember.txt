@@ -13,10 +13,3 @@ Board character image suggestions icons/pictures
 Pictures on selection screen
 Project time management
 Task access - moodle
-
-
-Character selection:
-Icon
-Name
-Story
-Age/Gender/House
