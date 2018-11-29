@@ -13,3 +13,14 @@ Board character image suggestions icons/pictures
 Pictures on selection screen
 Project time management
 Task access - moodle
+
+Fixes before testing:
+- Win screen
+- empliment hotjar. https://www.hotjar.com/
+- Upload project and check if there are any bugs
+- Send test request on facebook or other media
+
+Fixes after testing:
+- Display error differently
+- Winning screen
+- Other feedback

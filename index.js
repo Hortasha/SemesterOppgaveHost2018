@@ -49,7 +49,8 @@ io.on('connection', function(socket) {
 
 //Refresh player lobby after a disconnect
       io.to(lobby.name).emit('refresh lobby', {
-        lobby: lobby
+        lobby: lobby,
+        tiles: tiles
       });
 
       io.emit('refresh index', {
@@ -87,7 +88,8 @@ io.on('connection', function(socket) {
         socket.join(data.lobbyName);
         player.playerNum = lobby.players.length;
         io.to(lobby.name).emit('refresh lobby', {
-          lobby: lobby
+          lobby: lobby,
+          tiles: tiles
         });
         io.emit('refresh index', {
           lobbys: lobbys
@@ -125,7 +127,8 @@ io.on('connection', function(socket) {
       socket.join(data.lobbyName);
       player.playerNum = lobby.players.length;
       io.to(lobby.name).emit('refresh lobby', {
-        lobby: lobby
+        lobby: lobby,
+        tiles: tiles
       });
     }
   });
@@ -138,6 +141,14 @@ io.on('connection', function(socket) {
    **/
 
   socket.on('character selection screen', function() {
+
+    if(lobby !== "") {
+      for(var i = 0; i < lobbys.length; i++) {
+        if(lobbys[i] === lobby) {
+          lobbys.splice(i, 1);
+        }
+      }
+    }
 
     io.emit('refresh index', {
       lobbys: lobbys
@@ -169,7 +180,8 @@ io.on('connection', function(socket) {
     }
     if(next == null) {
       io.to(lobby.name).emit('start game', {
-        lobby: lobby
+        lobby: lobby,
+        tiles: tiles
       });
     } else {
       io.to(lobby.name).emit('next character select', {
@@ -194,7 +206,8 @@ io.on('connection', function(socket) {
     io.to(lobby.name).emit('move player', {
       lobby: lobby,
       player: player,
-      dice: rollAmount
+      dice: rollAmount,
+      tiles: tiles
     });
   });
 
@@ -211,7 +224,55 @@ io.on('connection', function(socket) {
       io.to(lobby.name).emit('winning', {
         player: data.player
       });
-    } else if(tiles[data.player.tile-1] === "") {
+    } else if(tiles[data.player.tile-1] !== "") {
+      if(data.player.id === socket.id) {
+        console.log("punishing");
+        //If tiles does anythig specific figure out and execute
+        if(tiles[data.player.tile-1].direction === "-") {
+          if(socket.id === data.player.id) {
+            player.tile -= tiles[data.player.tile-1].number;
+          }
+        }
+        if(tiles[data.player.tile-1].direction === "=") {
+          if(socket.id === data.player.id) {
+            player.tile = tiles[player.tile-1].number;
+          }
+        }
+
+        socket.emit('alert', {
+          message: tiles[data.player.tile-1].message,
+          player: data.player
+        });
+      }
+
+      for(var i = 0; i < lobby.players.length; i++) {
+        if (lobby.players[i].id === data.player.id) {
+          socket.emit('move player', {
+            lobby: lobby,
+            player: lobby.players[i],
+            dice: 0,
+            tiles: tiles
+          });
+        }
+      }
+    } else if(data.player.reroll === true) {
+      if(data.player.id === socket.id) {
+        player.reroll = false;
+      }
+      socket.emit('roll again', {
+        lobby: lobby,
+        player: data.player,
+        tiles: tiles
+      });
+    } else {
+      socket.emit('next trigger', {
+        player: data.player
+      });
+    }
+  });
+
+  socket.on('next turn', function(data){
+    if(tiles[data.player.tile-1] === "") {
 
       //Next player to roll next turn
       var next = "";
@@ -221,48 +282,10 @@ io.on('connection', function(socket) {
         next = lobby.players[0];
       }
 
-      //Check Reroll
-      if(data.player.reroll === true) {
-        if(data.player.id === player.id) {
-          player.reroll = false;
-        }
-        next = lobby.players[data.player.playerNum-1];
-      }
-
-      socket.emit('next turn', {
-        lobby: lobby,
-        player: next
-      });
-    } else {
-
-      //If tiles does anythig specific figure out and execute
-      if(tiles[data.player.tile-1].direction === "-") {
-        if(player.id === data.player.id) {
-          player.tile -= tiles[player.tile-1].number;
-        }
-      }
-      if(tiles[data.player.tile-1].direction === "+") {
-        if(player.id === data.player.id) {
-          player.tile += tiles[player.tile-1].number;
-        }
-      }
-      if(tiles[data.player.tile-1].direction === "=") {
-        if(player.id === data.player.id) {
-          player.tile = tiles[player.tile-1].number;
-        }
-      }
-
-      var next = "";
-      for(var i = 0; i < lobby.players.length; i++) {
-        if(lobby.players[i].id === data.player.id) {
-          next = lobby.players[i];
-        }
-      }
-
-      socket.emit('move player', {
+      io.to(lobby.name).emit('next turn', {
         lobby: lobby,
         player: next,
-        dice: 0
+        tiles: tiles
       });
     }
   });
@@ -306,9 +329,10 @@ io.on('connection', function(socket) {
    * Number specifies what tile or how many tiles
    * Direction specifies if going back amount of tiles or forward. If neighter is specfied player will be moved to tile of that number.
    */
-   constructor(number, direction) {
+   constructor(number, direction, message) {
      this.number = number;
      this.direction = direction;
+     this.message = message
    }
  }
 
@@ -342,7 +366,7 @@ tiles.push("");                   //1
 tiles.push("");                   //2
 tiles.push("");                   //3
 tiles.push("");                   //4
-tiles.push(new Tile(2, "-"));     //5
+tiles.push(new Tile(2, "-", "You fell, move back 2 steps."));     //5
 tiles.push("");                   //6
 tiles.push("");                   //7
 tiles.push("");                   //8
@@ -354,16 +378,16 @@ tiles.push("");                   //13
 tiles.push("");                   //14
 tiles.push("");                   //15
 tiles.push("");                   //16
-tiles.push(new Tile(3, "-"));     //17
+tiles.push(new Tile(3, "-", "You were hold up by bad weather, move back 3 steps."));     //17
 tiles.push("");                   //18
 tiles.push("");                   //19
-tiles.push(new Tile(1, "="));     //20
+tiles.push(new Tile(1, "=", "The white walkers got you. Move back to start."));     //20
 tiles.push("");                   //21
-tiles.push(new Tile(4, "-"));     //22
+tiles.push(new Tile(4, "-", "You lost in a duel, move back 4 steps."));     //22
 tiles.push("");                   //23
 tiles.push("");                   //24
 tiles.push("");                   //25
-tiles.push(new Tile(1, "="));     //26
+tiles.push(new Tile(1, "=", "You got attacked by a big dragon. Move back to start."));     //26
 tiles.push("");                   //27
 tiles.push("");                   //28
 tiles.push("");                   //29

@@ -4,7 +4,7 @@ var gameName = document.getElementById("gameName");
 var serverList = document.getElementById("serverList");
 var body = document.getElementById("body");
 var lobbyButtons = document.getElementsByClassName("lobby");
-
+var tiles;
 
 //game
 var canvas;
@@ -14,12 +14,14 @@ var context;
 
 var position = 0;
 var tile = 0;
+var canEnd = false;
+var player = "";
 
 //Resize canvas if exist
 window.onresize = function() {
   if(canvas !== undefined) {
     canvas.width = parent.offsetWidth-33;
-    drawBoard();
+    drawBoard(tiles);
   }
 };
 
@@ -39,6 +41,7 @@ socket.on('refresh index', function(data) {
 });
 
 socket.on('refresh lobby', function(data) {
+  tiles = data.tiles;
   body.innerHTML = "<h2 class='[ lobby__title ]'>Connected Players</2>";
 
   var playerConnections = document.createElement("div");
@@ -62,7 +65,7 @@ socket.on('character selection screen', function(data) {
   body.appendChild(characterDiv);
   characterDiv.setAttribute("class", "[ row ]");
   for(var i = 0; i < data.characters.length; i++) {
-    characterDiv.innerHTML += "<div class='[ col-md-4 ]'><button class='[ lobby__button--character ]' id='" + i + "' onclick='selectCharacter(\"" + i + "\")'><p><strong>Name: </strong>" + data.characters[i].name + "</p><p><strong>Piece: </strong><img src=\"" + data.characters[i].icon + "\" alt=\"" + data.characters[i].name + "\"></img></p><p><strong>Gender: </strong>" + data.characters[i].sex + "</p></button></div>";
+    characterDiv.innerHTML += "<div class='[ col-md-4 ]' id='" + i + "d'><button class='[ lobby__button--character ]' id='" + i + "' onclick='selectCharacter(\"" + i + "\")'><p><strong>Name: </strong>" + data.characters[i].name + "</p><p><strong>Piece: </strong><img src=\"" + data.characters[i].icon + "\" alt=\"" + data.characters[i].name + "\"></img></p><p><strong>Gender: </strong>" + data.characters[i].sex + "</p></button></div>";
 
     //Adding aliases
     var characterButton = document.getElementById(i);
@@ -90,7 +93,7 @@ socket.on('next character select', function(data) {
     heading.innerHTML = "Player " + data.player.playerNum;
   }
 
-  document.getElementById(data.taken.toString()).remove();
+  document.getElementById(data.taken.toString() + "d").remove();
 });
 
 socket.on('start game', function(data) {
@@ -120,7 +123,7 @@ socket.on('start game', function(data) {
   var contentDiv3 = document.createElement("div");
   body.appendChild(contentDiv3);
   contentDiv3.setAttribute("class", "[ row ][ game__rowEnd ]");
-  contentDiv3.innerHTML = "<div class='[ col-md-12 ]'><div class='[ game__rollDisplay ]'><h2 id='rollValue'>0</h2></div><button class='[ game__button--rollInactive ]' id='dice' onclick='rollDice()'>Roll</button></div>";
+  contentDiv3.innerHTML = "<div class='[ col-6 ]'><div class='[ game__rollDisplay ]'><h2 id='rollValue'>0</h2></div><button class='[ game__button--rollInactive ]' id='dice' onclick='rollDice()'>Roll</button></div><div class='[ col-6 ]'><button class='[ game__button--rollInactive ]' id='endButton'>End Turn</button></div>";
 
   //get dom elements
   var playerPos = document.getElementById("playerPos");
@@ -133,7 +136,7 @@ socket.on('start game', function(data) {
 
   canvas.width = parent.offsetWidth-33;
   canvas.height = 50;
-  drawBoard();
+  drawBoard(data.tiles);
 
   //Player 1 setup
 
@@ -155,9 +158,15 @@ socket.on('start game', function(data) {
     var rollButton = document.getElementById("dice");
     rollButton.setAttribute("class", "[ game__button--roll ]");
   }
+  var endButton = document.getElementById("endButton");
+  endButton.addEventListener("click", function() {
+    endTurn();
+  });
+  player = data.lobby.players[0];
 });
 
 socket.on('move player', function(data) {
+  console.log("moving " + data.dice)
   var dice = document.getElementById("rollValue");
   dice.innerHTML = data.dice;
   var sortedPlayers = data.lobby.players;
@@ -177,7 +186,7 @@ socket.on('move player', function(data) {
   //Animate movement to tile
   if(data.dice === 0) {
     tile = data.player.tile-1;
-    drawBoard();
+    drawBoard(data.tiles);
     setTimeout(function() {
       socket.emit('check tile', data);
     }, 1000);
@@ -189,6 +198,7 @@ socket.on('move player', function(data) {
           animateBoard();
           animateCalls();
         } else {
+          console.log("running check tile");
           socket.emit('check tile', data);
         }
         i++;
@@ -200,8 +210,9 @@ socket.on('move player', function(data) {
 });
 
 socket.on('next turn', function(data) {
-
+  console.log('next turn');
   //variables
+  player = data.player;
   var heading = document.getElementById('player');
   var playerIcon = document.getElementById("playerIcon");
   var rollButton = document.getElementById("dice");
@@ -214,20 +225,49 @@ socket.on('next turn', function(data) {
     if(data.player.id === socket.id) {
       heading.innerHTML = "Your Turn";
     } else {
-      for(var i = 0; i < data.lobby.players.length; i++) {
-        if(data.lobby.players[i].id === socket.id) {
-          heading.innerHTML = data.lobby.players[i].character.name;
-        }
-      }
+      heading.innerHTML = data.player.character.name;
     }
 
     tile = data.player.tile-1;
-    drawBoard();
+    drawBoard(data.tiles);
     playerIcon.src = data.player.character.icon;
     if(data.player.id === socket.id) {
       rollButton.setAttribute("class", "[ game__button--roll ]");
     }
   }, 2000);
+});
+
+socket.on('roll again', function(data) {
+    console.log('roll again');
+    //variables
+    var heading = document.getElementById('player');
+    var rollButton = document.getElementById("dice");
+
+    if(data.player.id === socket.id) {
+      heading.innerHTML = "Your Turn";
+    } else {
+      heading.innerHTML = data.player.character.name;
+    }
+
+    tile = data.player.tile-1;
+    drawBoard(data.tiles);
+    if(data.player.id === socket.id) {
+      rollButton.setAttribute("class", "[ game__button--roll ]");
+    }
+});
+
+socket.on('next trigger', function(data) {
+  console.log("next trigger");
+  if(data.player.id === socket.id) {
+    var endButton = document.getElementById("endButton");
+    endButton.setAttribute("class", "[ game__button--roll ]");
+    canEnd = true;
+  }
+});
+
+socket.on('alert', function(data) {
+  console.log("alert");
+  alert(data.message);
 });
 
 socket.on('winning', function(data) {
@@ -236,7 +276,7 @@ socket.on('winning', function(data) {
   } else {
     body.innerHTML = '<h2 class="[ game__title ]">Player ' + data.player.playerNum + ': ' + data.player.character.name + ' wins</h2>';
   }
-
+  body.innerHTML += "<h3 class='[ game__underTitle ]'>Background image from:<h3>"
   body.innerHTML += '<a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@jonnyauh?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Jonathan Auh"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-1px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M20.8 18.1c0 2.7-2.2 4.8-4.8 4.8s-4.8-2.1-4.8-4.8c0-2.7 2.2-4.8 4.8-4.8 2.7.1 4.8 2.2 4.8 4.8zm11.2-7.4v14.9c0 2.3-1.9 4.3-4.3 4.3h-23.4c-2.4 0-4.3-1.9-4.3-4.3v-15c0-2.3 1.9-4.3 4.3-4.3h3.7l.8-2.3c.4-1.1 1.7-2 2.9-2h8.6c1.2 0 2.5.9 2.9 2l.8 2.4h3.7c2.4 0 4.3 1.9 4.3 4.3zm-8.6 7.5c0-4.1-3.3-7.5-7.5-7.5-4.1 0-7.5 3.4-7.5 7.5s3.3 7.5 7.5 7.5c4.2-.1 7.5-3.4 7.5-7.5z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Jonathan Auh</span></a>';
 });
 
@@ -292,12 +332,28 @@ function rollDice() {
   }
 }
 
-function drawBoard() {
+function endTurn() {
+  var endButton = document.getElementById("endButton");
+  endButton.setAttribute("class", "[ game__button--rollInactive ]");
+  if (canEnd) {
+    socket.emit('next turn', {
+      player: player
+    });
+  }
+  canEnd = false;
+}
+
+function drawBoard(tiles) {
   if(canvas.getContext) {
     context.clearRect(0, 0, canvas.width, canvas.height);
     //Stroke
     for(var i = tile-1; i < 30; i++) {
       context.beginPath();
+      if(tiles[i] !== "") {
+        context.fillStyle="#ff3232";
+      } else {
+        context.fillStyle="#000000";
+      }
       context.rect((i-tile)*50, 0, 50, 50);
       context.closePath();
       context.stroke();
@@ -314,7 +370,6 @@ function drawBoard() {
 
 function animateBoard() {
   if(canvas.getContext) {
-
     var animation = requestAnimationFrame(animateBoard);
 
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -323,6 +378,11 @@ function animateBoard() {
     //Stroke
     for(var i = tile-1; i < 30; i++) {
       context.beginPath();
+      if(tiles[i] !== "") {
+        context.fillStyle="#ff3232";
+      } else {
+        context.fillStyle="#000000";
+      }
       context.rect((i-tile+1)*50+position, 0, 50, 50);
       context.closePath();
       context.stroke();
