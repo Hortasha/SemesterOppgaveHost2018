@@ -58,7 +58,7 @@ body, html {
       background-color: $buttonColor;
 
       &:hover {
-        background-color: darken($buttonColor, 20%);
+        background-color: darken($buttonColor, 10%);
       }
     }
 

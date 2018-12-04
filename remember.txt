@@ -1,24 +1,12 @@
-- More restrictions for game name.
-- Maximum players - 10
-- Remember to delete objects that are no longer in use
-- Disconnect during game solution?!
-
-
 Sources:
 https://fontmeme.com/fonts/game-of-thrones-font/
 
+Code:
+- Input lables
 
-Questions:
-Board character image suggestions icons/pictures
-Pictures on selection screen
-Project time management
-Task access - moodle
+Presentation:
+Github - get image of different stages of the project
+Use project examples when explaining design decisions
+Lysbildeoverganger
 
-Fixes before testing:
-- empliment hotjar. https://www.hotjar.com/
-- Upload project and check if there are any bugs
-- Send test request on facebook or other media
-
-Fixes after testing:
-- Display error differently
-- Other feedback
+Rapport:
