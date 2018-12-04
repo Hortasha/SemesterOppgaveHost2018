@@ -1,12 +1,11 @@
 require('isomorphic-fetch');
 
 //Setup
-var port = 3000;
+var port = 50000;
 var express = require('express');
 var socket = require('socket.io');
 var app = express();
 var server = app.listen(port, function() {
-  console.log('listening on *:' + port);
 })
 var io = socket(server);
 
@@ -24,8 +23,6 @@ io.on('connection', function(socket) {
 //Connection data
   var player = new Player(socket.id);
   var lobby = "";
-
-  console.log('connected', socket.id);
 
 //Client disconnects
   socket.on('disconnect', function(){
@@ -59,7 +56,6 @@ io.on('connection', function(socket) {
     }
 
 //If there are no players in the lobby, remove the lobby
-    console.log('user disconnected', socket.id);
   });
 
 
@@ -226,7 +222,6 @@ io.on('connection', function(socket) {
       });
     } else if(tiles[data.player.tile-1] !== "") {
       if(data.player.id === socket.id) {
-        console.log("punishing");
         //If tiles does anythig specific figure out and execute
         if(tiles[data.player.tile-1].direction === "-") {
           if(socket.id === data.player.id) {
@@ -276,9 +271,9 @@ io.on('connection', function(socket) {
 
       //Next player to roll next turn
       var next = "";
-      next = lobby.players[data.player.playerNum];
-
-      if(next == null) {
+      if(lobby.players[data.player.playerNum] !== undefined) {
+        next = lobby.players[data.player.playerNum];
+      } else {
         next = lobby.players[0];
       }
 

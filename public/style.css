@@ -131,6 +131,12 @@ body, html {
   font-size: 20px;
   text-align: center;
 }
+.game__normalTitle {
+  font-family: Arial;
+  padding: 20px 0 10px;
+  font-size: 20px;
+  text-align: center;
+}
 .game__button--roll {
   padding: 10px 30px;
   margin-top: 10px;
