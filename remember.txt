@@ -7,6 +7,7 @@ Code:
 Presentation:
 Github - get image of different stages of the project
 Use project examples when explaining design decisions
+Hotjar responses
 Lysbildeoverganger
 
 Rapport:
