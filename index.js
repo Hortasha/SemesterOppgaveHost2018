@@ -1,12 +1,13 @@
 require('isomorphic-fetch');
 
 //Setup
-var port = 50000;
+var port = 3000;
 var express = require('express');
 var socket = require('socket.io');
 var app = express();
 var server = app.listen(port, function() {
-})
+  console.log("listening to port " + port);
+});
 var io = socket(server);
 
 //static file
@@ -19,14 +20,14 @@ var tiles = [];
 
 //Client request connection
 io.on('connection', function(socket) {
-
+  console.log("connected " + socket.id);
 //Connection data
   var player = new Player(socket.id);
   var lobby = "";
 
 //Client disconnects
   socket.on('disconnect', function(){
-
+    console.log("disconnected " + socket.id);
 //If player is part of a lobby, remove player from lobby
     if(lobby !== "") {
       for(var i = 0; i < lobby.players.length; i++) {

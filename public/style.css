@@ -31,13 +31,13 @@ body, html {
 }
 
 .index__title {
-  font-family: Thrones, Arial;
+  font-family: Thrones, Arial, Arial;
   padding: 20px 0 10px;
 }
 .index__underTitle {
-  font-family: Thrones, Arial;
+  font-family: Arial;
   padding: 20px 0 10px;
-  font-size: 20px;
+  font-size: 30px;
   text-shadow: 2px 2px 3px #fff;
 }
 .index__section--split {
@@ -84,13 +84,13 @@ body, html {
 }
 
 .lobby__title {
-  font-family: Thrones, Arial;
+  font-family: Thrones, Arial, Arial;
   padding: 20px 0 10px;
 }
 .lobby__underTitle {
-  font-family: Thrones, Arial;
+  font-family: Arial;
   padding: 20px 0 10px;
-  font-size: 20px;
+  font-size: 30px;
 }
 .lobby__button--start {
   padding: 10px 30px;
@@ -126,9 +126,9 @@ body, html {
   text-align: center;
 }
 .game__underTitle {
-  font-family: Thrones, Arial;
+  font-family: Arial;
   padding: 20px 0 10px;
-  font-size: 20px;
+  font-size: 30px;
   text-align: center;
 }
 .game__normalTitle {

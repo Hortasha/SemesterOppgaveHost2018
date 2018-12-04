@@ -1,14 +1,14 @@
 
 .lobby {
   &__title {
-    font-family: $thrones;
+    font-family: $thrones, Arial;
     padding: 20px 0 10px
   }
 
   &__underTitle {
-    font-family: $thrones;
+    font-family: Arial;
     padding: 20px 0 10px;
-    font-size: 20px;
+    font-size: 30px;
   }
 
   &__button {

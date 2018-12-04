@@ -47,10 +47,10 @@ socket.on('refresh lobby', function(data) {
   var playerConnections = document.createElement("div");
   playerConnections.setAttribute("class", "[ lobby__backgroundContainer ]");
   for(var i = 0; i < data.lobby.players.length; i++) {
-    playerConnections.innerHTML += "<p><strong>Player " + (i+1) + ":</strong> " + data.lobby.players[i].id + "</p>";
+    playerConnections.innerHTML += "<p><strong>Player " + (i+1) + ":</strong> Connected</p>";
   }
   body.appendChild(playerConnections);
-  body.innerHTML += "<button class='[ lobby__button--start ]' onclick='characterScreen()'>Play</button>";
+  body.innerHTML += "<button class='[ lobby__button--start ]' onclick='characterScreen()'>Select Characters</button>";
 });
 
 socket.emit('refresh index');
@@ -61,6 +61,7 @@ socket.on('character selection screen', function(data) {
   } else {
     body.innerHTML = "<h2 class='lobby__title' id='player'>Player 1</h2>";
   }
+  body.innerHTML += "<p>Choose one of the characters below</p>";
   var characterDiv = document.createElement("div");
   body.appendChild(characterDiv);
   characterDiv.setAttribute("class", "[ row ]");
@@ -109,7 +110,7 @@ socket.on('start game', function(data) {
   } else {
     contentDiv1.innerHTML = "<div class='[ col-md-12 ]'><h2 class='[ game__title ]' id='player'>" + data.lobby.players[0].character.name + "</h2></div>";
   }
-  contentDiv1.innerHTML += "<div class='[ col-md-12 ][ game__background ]'><h3 class='[ game__underTitle ]'>Player positions</h3><p id='playerPos'></p></div>";
+  contentDiv1.innerHTML += "<div class='[ col-md-12 ][ game__background ]'><h3 class='[ game__underTitle ]'>Player Positions</h3><p id='playerPos'></p></div>";
 
   //Row 2
   var contentDiv2 = document.createElement("div");
