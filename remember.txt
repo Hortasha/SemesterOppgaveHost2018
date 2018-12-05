@@ -2,12 +2,15 @@ Sources:
 https://fontmeme.com/fonts/game-of-thrones-font/
 
 Code:
-- Input lables
+- Dices instead of numbers
+- notifications
+- button alignment
+
+Too difficult?
+- Loadmask when waiting for server response
+- More information about tiles
 
 Presentation:
-Github - get image of different stages of the project
-Use project examples when explaining design decisions
-Hotjar responses
 Lysbildeoverganger
 
 Rapport:

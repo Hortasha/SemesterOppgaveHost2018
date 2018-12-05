@@ -312,13 +312,13 @@ function rollDice() {
   rollButton.setAttribute("class", "[ game__button--rollInactive ]");
   if (turn.innerHTML === "Your Turn") {
     var i = 0;
+    turn.innerHTML = "Moving";
     function roll() {
       setTimeout(function() {
         if(i < 10) {
           dice.innerHTML = Math.floor(Math.random() * 6) + 1;
           roll();
         } else {
-          turn.innerHTML = "Moving";
           socket.emit('roll', {
             playerId: socket.id
           });
