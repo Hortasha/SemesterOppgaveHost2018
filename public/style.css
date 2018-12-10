@@ -52,7 +52,7 @@ body, html {
   background-color: #554cff;
 }
 .index__button--start:hover {
-  background-color: #0c00e5;
+  background-color: #2519ff;
 }
 .index__button--lobby {
   border: none;
@@ -101,7 +101,7 @@ body, html {
   background-color: #554cff;
 }
 .lobby__button--start:hover {
-  background-color: #0c00e5;
+  background-color: #2519ff;
 }
 .lobby__button--character {
   border: none;
@@ -148,7 +148,11 @@ body, html {
   background-color: #554cff;
 }
 .game__button--roll:hover {
-  background-color: #0c00e5;
+  background-color: #2519ff;
+}
+.game__button--align {
+  float: right;
+  margin-top: 100px !important;
 }
 .game__button--rollInactive {
   padding: 10px 30px;
@@ -161,10 +165,12 @@ body, html {
 }
 .game__rollDisplay {
   padding: 15px 0;
-  background-color: white;
-  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0);
   width: 85px;
   text-align: center;
+}
+.game__rollValue {
+  font-size: 3rem;
 }
 .game__row {
   margin-bottom: 30px;

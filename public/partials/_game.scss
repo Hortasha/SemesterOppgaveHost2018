@@ -1,4 +1,3 @@
-
 .game {
   &__title {
     font-family: Thrones, Arial;
@@ -37,6 +36,11 @@
       }
     }
 
+    &--align {
+      float: right;
+      margin-top: 100px !important;
+    }
+    
     &--rollInactive {
       padding: 10px 30px;
       margin-top: 10px;
@@ -50,10 +54,13 @@
 
   &__rollDisplay {
     padding: 15px 0;
-    background-color: white;
-    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0);
     width: 85px;
     text-align: center;
+  }
+
+  &__rollValue {
+    font-size: 3rem;
   }
 
   &__row {

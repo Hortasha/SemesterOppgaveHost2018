@@ -1,11 +1,6 @@
 Sources:
 https://fontmeme.com/fonts/game-of-thrones-font/
 
-Code:
-- Dices instead of numbers
-- notifications
-- button alignment
-
 Too difficult?
 - Loadmask when waiting for server response
 - More information about tiles
@@ -14,3 +9,8 @@ Presentation:
 Lysbildeoverganger
 
 Rapport:
+fuck you too weeb
+takk <3
+
+maybe:
+organize files better

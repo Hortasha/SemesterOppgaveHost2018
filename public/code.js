@@ -124,7 +124,7 @@ socket.on('start game', function(data) {
   var contentDiv3 = document.createElement("div");
   body.appendChild(contentDiv3);
   contentDiv3.setAttribute("class", "[ row ][ game__rowEnd ]");
-  contentDiv3.innerHTML = "<div class='[ col-6 ]'><div class='[ game__rollDisplay ]'><h2 id='rollValue'>0</h2></div><button class='[ game__button--rollInactive ]' id='dice' onclick='rollDice()'>Roll</button></div><div class='[ col-6 ]'><button class='[ game__button--rollInactive ]' id='endButton'>End Turn</button></div>";
+  contentDiv3.innerHTML = "<div class='[ col-6 ]'><div class='[ game__rollDisplay ]'><h2 class='[ game__rollValue ]' id='rollValue'><i class='fas fa-dice'></i></h2></div><button class='[ game__button--rollInactive ]' id='dice' onclick='rollDice()'>Roll</button></div><div class='[ col-6 ]'><button class='[ game__button--rollInactive game__button--align ]' id='endButton'>End Turn</button></div>";
 
   //get dom elements
   var playerPos = document.getElementById("playerPos");
@@ -168,7 +168,35 @@ socket.on('start game', function(data) {
 
 socket.on('move player', function(data) {
   var dice = document.getElementById("rollValue");
-  dice.innerHTML = data.dice;
+
+  switch(data.dice) {
+    case 1:
+      dice.innerHTML = '<i class="fas fa-dice-one"></i>';
+    break;
+
+    case 2:
+      dice.innerHTML = '<i class="fas fa-dice-two"></i>';
+    break;
+
+    case 3:
+      dice.innerHTML = '<i class="fas fa-dice-three"></i>';
+    break;
+
+    case 4:
+      dice.innerHTML = '<i class="fas fa-dice-four"></i>';
+    break;
+
+    case 5:
+      dice.innerHTML = '<i class="fas fa-dice-five"></i>';
+    break;
+
+    case 6:
+      dice.innerHTML = '<i class="fas fa-dice-six"></i>';
+    break;
+
+    default:
+      dice.innerHTML = '<i class="<i class="fas fa-dice"></i>"';
+  }
   var sortedPlayers = data.lobby.players;
   sortedPlayers.sort(function(a, b) {
     return b.tile - a.tile;
@@ -259,7 +287,7 @@ socket.on('next trigger', function(data) {
 
   if(data.player.id === socket.id) {
     var endButton = document.getElementById("endButton");
-    endButton.setAttribute("class", "[ game__button--roll ]");
+    endButton.setAttribute("class", "[ game__button--roll game__button--align ]");
     canEnd = true;
   }
 });
@@ -276,6 +304,9 @@ socket.on('winning', function(data) {
   }
   body.innerHTML += "<h3 class='[ game__normalTitle ]'>Background image from:<h3>"
   body.innerHTML += '<a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@jonnyauh?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Jonathan Auh"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-1px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M20.8 18.1c0 2.7-2.2 4.8-4.8 4.8s-4.8-2.1-4.8-4.8c0-2.7 2.2-4.8 4.8-4.8 2.7.1 4.8 2.2 4.8 4.8zm11.2-7.4v14.9c0 2.3-1.9 4.3-4.3 4.3h-23.4c-2.4 0-4.3-1.9-4.3-4.3v-15c0-2.3 1.9-4.3 4.3-4.3h3.7l.8-2.3c.4-1.1 1.7-2 2.9-2h8.6c1.2 0 2.5.9 2.9 2l.8 2.4h3.7c2.4 0 4.3 1.9 4.3 4.3zm-8.6 7.5c0-4.1-3.3-7.5-7.5-7.5-4.1 0-7.5 3.4-7.5 7.5s3.3 7.5 7.5 7.5c4.2-.1 7.5-3.4 7.5-7.5z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Jonathan Auh</span></a>';
+
+  body.innerHTML += "<h3 class='[ game__normalTitle ]'>Font from:<h3>"
+  body.innerHTML += '<a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://fontmeme.com/fonts/game-of-thrones-font/" target="_blank" rel="noopener noreferrer" title="game of thrones font replicated"><span style="display:inline-block;padding:2px 3px">Charlie Samways</span></a>';
 });
 
 function joinLobby(lobbyName) {
@@ -316,7 +347,36 @@ function rollDice() {
     function roll() {
       setTimeout(function() {
         if(i < 10) {
-          dice.innerHTML = Math.floor(Math.random() * 6) + 1;
+          var num = Math.floor(Math.random() * 6) + 1;
+
+          switch(num) {
+            case 1:
+              dice.innerHTML = '<i class="fas fa-dice-one"></i>';
+            break;
+
+            case 2:
+              dice.innerHTML = '<i class="fas fa-dice-two"></i>';
+            break;
+
+            case 3:
+              dice.innerHTML = '<i class="fas fa-dice-three"></i>';
+            break;
+
+            case 4:
+              dice.innerHTML = '<i class="fas fa-dice-four"></i>';
+            break;
+
+            case 5:
+              dice.innerHTML = '<i class="fas fa-dice-five"></i>';
+            break;
+
+            case 6:
+              dice.innerHTML = '<i class="fas fa-dice-six"></i>';
+            break;
+
+            default:
+              dice.innerHTML = '<i class="<i class="fas fa-dice"></i>"';
+          }
           roll();
         } else {
           socket.emit('roll', {
@@ -332,7 +392,8 @@ function rollDice() {
 
 function endTurn() {
   var endButton = document.getElementById("endButton");
-  endButton.setAttribute("class", "[ game__button--rollInactive ]");
+
+  endButton.setAttribute("class", "[ game__button--rollInactive game__button--align ]");
   if (canEnd) {
     socket.emit('next turn', {
       player: player
