@@ -195,7 +195,7 @@ socket.on('move player', function(data) {
     break;
 
     default:
-      dice.innerHTML = '<i class="<i class="fas fa-dice"></i>"';
+      dice.innerHTML = '<i class="fas fa-dice"></i>';
   }
   var sortedPlayers = data.lobby.players;
   sortedPlayers.sort(function(a, b) {

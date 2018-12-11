@@ -40,7 +40,7 @@
       float: right;
       margin-top: 100px !important;
     }
-    
+
     &--rollInactive {
       padding: 10px 30px;
       margin-top: 10px;
@@ -54,7 +54,8 @@
 
   &__rollDisplay {
     padding: 15px 0;
-    background-color: rgba(0, 0, 0, 0);
+    background-color: rgba(200, 200, 200, 0.6);
+    border-radius: 5px;
     width: 85px;
     text-align: center;
   }
