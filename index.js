@@ -18,23 +18,26 @@ var lobbys = [];
 var characters = [];
 var tiles = [];
 
-//Client request connection
+//Client connection
 io.on('connection', function(socket) {
   console.log("connected " + socket.id);
-//Connection data
+  //Connection data
   var player = new Player(socket.id);
   var lobby = "";
 
 //Client disconnects
   socket.on('disconnect', function(){
     console.log("disconnected " + socket.id);
-//If player is part of a lobby, remove player from lobby
+
+    //If player is part of a game, remove player from game
     if(lobby !== "") {
       for(var i = 0; i < lobby.players.length; i++) {
         if(lobby.players[i].id === socket.id) {
           lobby.players.splice(i, 1);
         }
       }
+
+      //If game is empty remove the game from lobbys.
       if(lobby !== "") {
         if(lobby.players.length < 1) {
           for(var i = 0; i < lobbys.length; i++) {
@@ -45,49 +48,48 @@ io.on('connection', function(socket) {
         }
       }
 
-//Refresh player lobby after a disconnect
+      //Refresh game lobby after a disconnect
       io.to(lobby.name).emit('refresh lobby', {
         lobby: lobby,
         tiles: tiles
       });
 
+      //Refresh lobby information for all clients on index.
       io.emit('refresh index', {
         lobbys: lobbys
       });
     }
-
-//If there are no players in the lobby, remove the lobby
   });
 
-
-//Client request to get lobbys to join
+//Trigger on refresh index request
   socket.on('refresh index', function() {
+
+    //Refresh lobby information for all clients on index.
     io.emit('refresh index', {
       lobbys: lobbys
     });
   });
 
-
-  /**
-   ** Client requesting to join lobby
-   ** Looping through all lobbys and locate the lobby that is clicked on
-   ** Save the lobby as variable, push player to that lobby
-   ** Join the lobby room to easier broadcast to that room.
-   ** Assign player player number
-   ** Refresh lobby for everyone allready in the lobby
-   **/
-
+//Trigger on join lobby
   socket.on('join lobby', function(data) {
+
+    //Locate correct lobby and assign values correctly.
     for(var i = 0; i < lobbys.length; i++) {
       if(lobbys[i].name === data.lobbyName) {
         lobby = lobbys[i];
         lobby.players.push(player);
-        socket.join(data.lobbyName);
         player.playerNum = lobby.players.length;
+
+        //socket.io - player join room assigned to the game.
+        socket.join(data.lobbyName);
+
+        //Refresh game lobby for all clients connected to the game.
         io.to(lobby.name).emit('refresh lobby', {
           lobby: lobby,
           tiles: tiles
         });
+
+        //refresh index for all clients on index page.
         io.emit('refresh index', {
           lobbys: lobbys
         });
@@ -95,17 +97,10 @@ io.on('connection', function(socket) {
     }
   });
 
-
-
-  /**
-   ** Client requesting to create a new lobby
-   ** Create a new game for the lobby and push it to a variable.
-   ** Join the lobby room to easier broadcast to that room.
-   ** Assign player player number
-   ** Refresh lobby for everyone allready in the lobby
-   **/
-
+//Trigger to create lobby
   socket.on('create lobby', function(data) {
+
+    //Check if lobby name is valid
     var valid = true;
     if(data.lobbyName === "") {
       valid = false;
@@ -117,12 +112,15 @@ io.on('connection', function(socket) {
       }
     }
 
+    //If still valid create room and assign values
     if(valid === true) {
       lobby = new Game(data.lobbyName);
       lobby.players.push(player);
       lobbys.push(lobby);
       socket.join(data.lobbyName);
       player.playerNum = lobby.players.length;
+
+      //Refresh game lobby for all clients in game.
       io.to(lobby.name).emit('refresh lobby', {
         lobby: lobby,
         tiles: tiles
@@ -130,15 +128,10 @@ io.on('connection', function(socket) {
     }
   });
 
-  /**
-   ** Client requesting characters to put in character selection screen
-   ** Refresh index for everyine looking for lobby.
-   ** This lobby should no longer be an option to join.
-   ** Provides all clients with characters to display
-   **/
-
+//Trigger on character selection screen
   socket.on('character selection screen', function() {
 
+    //Remove game from availeble lobbys to join.
     if(lobby !== "") {
       for(var i = 0; i < lobbys.length; i++) {
         if(lobbys[i] === lobby) {
@@ -147,40 +140,41 @@ io.on('connection', function(socket) {
       }
     }
 
+    //Refresh lobbys for all clients on index page.
     io.emit('refresh index', {
       lobbys: lobbys
     });
 
+    //Send all clients connected to current game to character selection screen
     io.to(lobby.name).emit('character selection screen', {
       lobby: lobby,
       characters: characters
     });
   });
 
-  /**
-   ** Client have chosen a character
-   ** Assign character to player
-   ** Calulate what player that can choose next
-   ** If everyone have chosen a character start the game
-   ** If not provide all clients with what character have been chosen
-   ** and what client that can choose a character next
-   **/
-
+//Trigger on select character
   socket.on('select character', function(data) {
+
+    //Assign character to player
     player.character = characters[data.characterId];
 
+    //Locate next player
     var next = "";
     for(var i = 0; i < lobby.players.length; i++) {
       if(lobby.players[i].id === data.playerId) {
         next = lobby.players[i+1];
       }
     }
+
+    //If all players have selected a character start the game for all clients
     if(next == null) {
       io.to(lobby.name).emit('start game', {
         lobby: lobby,
         tiles: tiles
       });
     } else {
+
+    //Trigger next player to be availeble to selext character
       io.to(lobby.name).emit('next character select', {
         taken: data.characterId,
         player: next
@@ -188,18 +182,18 @@ io.on('connection', function(socket) {
     }
   });
 
-  /**
-   ** Client roll the dice
-   ** Calculates the roll and add the roll the the player
-   ** Inform all clients where player moves to.
-   **/
+
+// Trigger on roll
   socket.on('roll', function(data) {
+
+    //Roll the dice and move client
     var rollAmount = Math.floor(Math.random() * 6) + 1;
     player.tile += rollAmount;
     if(rollAmount === 6) {
       player.reroll = true;
     }
 
+    //Trigger client to execute movement on board
     io.to(lobby.name).emit('move player', {
       lobby: lobby,
       player: player,
@@ -209,21 +203,18 @@ io.on('connection', function(socket) {
   });
 
 
-  /**
-   ** Client land on a tile
-   ** Display win screen for all clients of a player have won.
-   ** If tile does not do anything roll again for whoever is next
-   ** If tile does move the player further provide all clients with the new movement
-   **/
+// trigger on check tile
   socket.on('check tile', function(data) {
-    //Win condision
+
+    //Check win condition
     if(data.player.tile >= 30) {
       io.to(lobby.name).emit('winning', {
         player: data.player
       });
+
+    //Check if client landed on trap and what the trap does
     } else if(tiles[data.player.tile-1] !== "") {
       if(data.player.id === socket.id) {
-        //If tiles does anythig specific figure out and execute
         if(tiles[data.player.tile-1].direction === "-") {
           if(socket.id === data.player.id) {
             player.tile -= tiles[data.player.tile-1].number;
@@ -235,12 +226,14 @@ io.on('connection', function(socket) {
           }
         }
 
+        //Alert client that landed on trap
         socket.emit('alert', {
           message: tiles[data.player.tile-1].message,
           player: data.player
         });
       }
 
+      //Move the client
       for(var i = 0; i < lobby.players.length; i++) {
         if (lobby.players[i].id === data.player.id) {
           socket.emit('move player', {
@@ -251,6 +244,8 @@ io.on('connection', function(socket) {
           });
         }
       }
+
+    //If client previosuly rolled 6 provide reroll
     } else if(data.player.reroll === true) {
       if(data.player.id === socket.id) {
         player.reroll = false;
@@ -260,6 +255,8 @@ io.on('connection', function(socket) {
         player: data.player,
         tiles: tiles
       });
+
+    //If none of the conditions above apply client get option to end turn.
     } else {
       socket.emit('next trigger', {
         player: data.player
@@ -267,10 +264,11 @@ io.on('connection', function(socket) {
     }
   });
 
+// trigger on next turn
   socket.on('next turn', function(data){
     if(tiles[data.player.tile-1] === "") {
 
-      //Next player to roll next turn
+      //Locate next player
       var next = "";
       if(lobby.players[data.player.playerNum] !== undefined) {
         next = lobby.players[data.player.playerNum];
@@ -278,6 +276,7 @@ io.on('connection', function(socket) {
         next = lobby.players[0];
       }
 
+      //Tell all clients what client get next turn
       io.to(lobby.name).emit('next turn', {
         lobby: lobby,
         player: next,
@@ -322,8 +321,9 @@ io.on('connection', function(socket) {
 
  class Tile {
    /*
-   * Number specifies what tile or how many tiles
-   * Direction specifies if going back amount of tiles or forward. If neighter is specfied player will be moved to tile of that number.
+   * Number specifies amount of tiles
+   * Direction specifies - or =. Moving back or moving towards
+   * Message specifies what message to display for the player when landing on tile.
    */
    constructor(number, direction, message) {
      this.number = number;
@@ -332,10 +332,7 @@ io.on('connection', function(socket) {
    }
  }
 
-/**
- ** Get character data from API
- **/
-
+//Character names
  var characterNames = [{first: "Daenerys", last: "Targaryen"},
    {first: "Jon", last: "Snow"},
    {first: "Tyrion", last: "Lannister"},
@@ -347,6 +344,7 @@ io.on('connection', function(socket) {
    {first: "Tywin", last: "Lannister"},
    {first: "Jaime", last: "Lannister"}];
 
+//Execute API calls for all characters
  for(let i = 0; i < characterNames.length; i++) {
    getAPI(characterNames[i].first, characterNames[i].last)
      .then(function (result) {
@@ -354,10 +352,7 @@ io.on('connection', function(socket) {
      });
  }
 
- /**
-  ** Tile info
-  **/
-
+//Push all tiles on the board to an array
 tiles.push("");                   //1
 tiles.push("");                   //2
 tiles.push("");                   //3
@@ -389,10 +384,7 @@ tiles.push("");                   //28
 tiles.push("");                   //29
 tiles.push("");                   //30
 
- /**
-  ** Function
-  **/
-
+//API call function for finding character data.
  function getAPI(firstName, lastName) {
   return new Promise(
   resolve => {

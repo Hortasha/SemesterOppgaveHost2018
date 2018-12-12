@@ -1,23 +1,27 @@
 //Variables
-//index
+
+//Elements
 var gameName = document.getElementById("gameName");
 var serverList = document.getElementById("serverList");
 var body = document.getElementById("body");
 var lobbyButtons = document.getElementsByClassName("lobby");
-var tiles;
 
-//game
+//Canvas
 var canvas;
 var parent;
 var context;
-
-
+var tiles;
 var position = 0;
 var tile = 0;
+
+//Other
 var canEnd = false;
 var player = "";
 
-//Resize canvas if exist
+//Socket
+var socket = io();
+
+//Resize canvas when resizing window
 window.onresize = function() {
   if(canvas !== undefined) {
     canvas.width = parent.offsetWidth-33;
@@ -25,23 +29,32 @@ window.onresize = function() {
   }
 };
 
-//Socket
-var socket = io();
+//Get availeble lobbys first time loading page
+socket.emit('refresh index');
 
+//Trigger on refresh index
 socket.on('refresh index', function(data) {
+
+  //Populate availeble lobbys on index page.
   serverList.innerHTML = "";
   for(var i = 0; i < data.lobbys.length; i++) {
     if(data.lobbys[i].players.length !== 10) {
       serverList.innerHTML += "<div class='[ col-md-4 ]'><button class='[ index__button--lobby ]' onclick='joinLobby(\"" + data.lobbys[i].name + "\")'><strong>Lobby Name:</strong> " + data.lobbys[i].name + "<br><strong>Players:</strong> " + data.lobbys[i].players.length + "</button></div>";
     }
   }
+  //Message of no lobbys are availeble
   if(data.lobbys.length < 1) {
     serverList.innerHTML = "<p class='[ index__error ]'>No games availeble, create a new game</p>";
   }
 });
 
+
+//Trigger on refresh lobby
 socket.on('refresh lobby', function(data) {
+  //Data for canvas later
   tiles = data.tiles;
+
+  //Generate game lobby
   body.innerHTML = "<h2 class='[ lobby__title ]'>Connected Players</2>";
 
   var playerConnections = document.createElement("div");
@@ -53,9 +66,9 @@ socket.on('refresh lobby', function(data) {
   body.innerHTML += "<button class='[ lobby__button--start ]' onclick='characterScreen()'>Select Characters</button>";
 });
 
-socket.emit('refresh index');
-
+//Trigger on character selection Screen
 socket.on('character selection screen', function(data) {
+  //Populate page with characters to select
   if(socket.id === data.lobby.players[0].id) {
     body.innerHTML = "<h2 class='lobby__title' id='player'>Your Turn</h2>";
   } else {
@@ -86,7 +99,9 @@ socket.on('character selection screen', function(data) {
   }
 });
 
+//Trigger on next character select
 socket.on('next character select', function(data) {
+  //Change to next players turn
   var heading = document.getElementById('player');
   if(data.player.id === socket.id) {
     heading.innerHTML = "Your Turn";
@@ -94,10 +109,14 @@ socket.on('next character select', function(data) {
     heading.innerHTML = "Player " + data.player.playerNum;
   }
 
+  //Remove previously selected character
   document.getElementById(data.taken.toString() + "d").remove();
 });
 
+
+//Trigger on start game
 socket.on('start game', function(data) {
+  //populate game page
   body.innerHTML = "";
 
   //Row 1
@@ -139,13 +158,15 @@ socket.on('start game', function(data) {
   canvas.height = 50;
   drawBoard(data.tiles);
 
-  //Player 1 setup
+  //Setup for player 1
 
+  //Sort Score
   var sortedPlayers = data.lobby.players;
   sortedPlayers.sort(function(a, b) {
     return b.tile - a.tile;
   });
 
+  //Refresh Score in html
   playerPos.innerHTML = "";
   for(var i = 0; i < sortedPlayers.length; i++) {
     if(sortedPlayers[i].id === socket.id) {
@@ -155,20 +176,27 @@ socket.on('start game', function(data) {
     }
   }
 
+  //Assign color to clickable roll button for player 1
   if(data.lobby.players[0].id === socket.id) {
     var rollButton = document.getElementById("dice");
     rollButton.setAttribute("class", "[ game__button--roll ]");
   }
+
+  //Add functinality to end turn button
   var endButton = document.getElementById("endButton");
   endButton.addEventListener("click", function() {
     endTurn();
   });
+
+  //current player
   player = data.lobby.players[0];
 });
 
+//Trigger on move player
 socket.on('move player', function(data) {
-  var dice = document.getElementById("rollValue");
 
+  //Display what player rolled
+  var dice = document.getElementById("rollValue");
   switch(data.dice) {
     case 1:
       dice.innerHTML = '<i class="fas fa-dice-one"></i>';
@@ -197,11 +225,14 @@ socket.on('move player', function(data) {
     default:
       dice.innerHTML = '<i class="fas fa-dice"></i>';
   }
+
+  //score sort
   var sortedPlayers = data.lobby.players;
   sortedPlayers.sort(function(a, b) {
     return b.tile - a.tile;
   });
 
+  //refresh score in html
   playerPos.innerHTML = "";
   for(var i = 0; i < sortedPlayers.length; i++) {
     if(sortedPlayers[i].id === socket.id) {
@@ -211,14 +242,16 @@ socket.on('move player', function(data) {
     }
   }
 
-  //Animate movement to tile
+  //Move player back depending on trap
   if(data.dice === 0) {
     tile = data.player.tile-1;
     drawBoard(data.tiles);
     setTimeout(function() {
+      //Send trigger to server to check tile
       socket.emit('check tile', data);
     }, 1000);
   } else {
+    //Animate player forward depending on roll amount
     var i = 0;
     function animateCalls() {
       setTimeout(function() {
@@ -226,6 +259,7 @@ socket.on('move player', function(data) {
           animateBoard();
           animateCalls();
         } else {
+          //Send trigger to server to check tile
           socket.emit('check tile', data);
         }
         i++;
@@ -236,55 +270,69 @@ socket.on('move player', function(data) {
   }
 });
 
+
+//Trigger on next turn
 socket.on('next turn', function(data) {
 
-  //variables
+  //Assign Variables
   player = data.player;
   var heading = document.getElementById('player');
   var playerIcon = document.getElementById("playerIcon");
   var rollButton = document.getElementById("dice");
 
-  //display next turn text
+  //Display name of the character that has next turn
   displayNext(data.player);
 
+  //Timeout while character name is on display before turn starts
   setTimeout(function() {
-    //Change data
+
+    //HTML changes and variable values change for active client
     if(data.player.id === socket.id) {
       heading.innerHTML = "Your Turn";
     } else {
       heading.innerHTML = data.player.character.name;
     }
-
     tile = data.player.tile-1;
-    drawBoard(data.tiles);
     playerIcon.src = data.player.character.icon;
+
+    //Button color for active button for active client
     if(data.player.id === socket.id) {
       rollButton.setAttribute("class", "[ game__button--roll ]");
     }
+
+    drawBoard(data.tiles);
   }, 2000);
 });
 
+//trigger on roll again
 socket.on('roll again', function(data) {
 
     //variables
     var heading = document.getElementById('player');
     var rollButton = document.getElementById("dice");
 
+    //HTML changes
     if(data.player.id === socket.id) {
       heading.innerHTML = "Your Turn";
     } else {
       heading.innerHTML = data.player.character.name;
     }
 
+    //new values
     tile = data.player.tile-1;
     drawBoard(data.tiles);
+
+    //Button color for active button for active client
     if(data.player.id === socket.id) {
       rollButton.setAttribute("class", "[ game__button--roll ]");
     }
 });
 
+
+//Trigger on next trigger
 socket.on('next trigger', function(data) {
 
+  //Button color for active button for active client
   if(data.player.id === socket.id) {
     var endButton = document.getElementById("endButton");
     endButton.setAttribute("class", "[ game__button--roll game__button--align ]");
@@ -292,11 +340,16 @@ socket.on('next trigger', function(data) {
   }
 });
 
+//trigger on alert
 socket.on('alert', function(data) {
   alert(data.message);
 });
 
+
+//Trigger on winning
 socket.on('winning', function(data) {
+
+  //populate winning page
   if(data.player.id === socket.id) {
     body.innerHTML = "<h2 class='[ game__title ]'>You Won!</h2>";
   } else {
@@ -309,23 +362,31 @@ socket.on('winning', function(data) {
   body.innerHTML += '<a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://fontmeme.com/fonts/game-of-thrones-font/" target="_blank" rel="noopener noreferrer" title="game of thrones font replicated"><span style="display:inline-block;padding:2px 3px">Charlie Samways</span></a>';
 });
 
+//Many of the functions below trigger when clicking on buttons
+
+//Trigger join lobby for server when joining a game
 function joinLobby(lobbyName) {
   socket.emit('join lobby', {
     lobbyName: lobbyName
   });
 }
 
+//Trigger create lobby for server when pressing "new game" on index
 function createLobby() {
   socket.emit('create lobby', {
     lobbyName: gameName.value
   });
+
+  //Trigger to refresh index for server after creating lobby
   socket.emit('refresh index');
 }
 
+//Trigger character selection for server when pressing "select characters" in lobby
 function characterScreen() {
   socket.emit('character selection screen');
 }
 
+//Trigger select character for server when after choosing a character.
 function selectCharacter(character) {
   var turn = document.getElementById("player");
   if (turn.innerHTML === "Your Turn") {
@@ -336,15 +397,23 @@ function selectCharacter(character) {
   }
 }
 
+//Rolling dice when pressing roll
 function rollDice() {
+  //Get elements
   var turn = document.getElementById("player");
   var dice = document.getElementById("rollValue");
   var rollButton = document.getElementById("dice");
+
+  //make button inactive
   rollButton.setAttribute("class", "[ game__button--rollInactive ]");
+
+  //check turn
   if (turn.innerHTML === "Your Turn") {
     var i = 0;
     turn.innerHTML = "Moving";
     function roll() {
+
+      //Roll animation
       setTimeout(function() {
         if(i < 10) {
           var num = Math.floor(Math.random() * 6) + 1;
@@ -379,6 +448,7 @@ function rollDice() {
           }
           roll();
         } else {
+          //After animation trigger roll for server
           socket.emit('roll', {
             playerId: socket.id
           });
@@ -390,6 +460,7 @@ function rollDice() {
   }
 }
 
+//If possible trigger endTurn for server
 function endTurn() {
   var endButton = document.getElementById("endButton");
 
@@ -402,10 +473,13 @@ function endTurn() {
   canEnd = false;
 }
 
+
+//draw game board
 function drawBoard(tiles) {
   if(canvas.getContext) {
     context.clearRect(0, 0, canvas.width, canvas.height);
-    //Stroke
+
+    //Draw each tile in a loop
     for(var i = tile-1; i < 30; i++) {
       context.beginPath();
       if(tiles[i] !== "") {
@@ -427,14 +501,16 @@ function drawBoard(tiles) {
   }
 }
 
+//Animate movement of one tile forward
 function animateBoard() {
   if(canvas.getContext) {
+    //start animation
     var animation = requestAnimationFrame(animateBoard);
 
     context.clearRect(0, 0, canvas.width, canvas.height);
     position -= 5;
 
-    //Stroke
+    //Draw one tile at a time
     for(var i = tile-1; i < 30; i++) {
       context.beginPath();
       if(tiles[i] !== "") {
@@ -452,6 +528,7 @@ function animateBoard() {
     }
 
     if(position === -50) {
+      //Stop animation when having moved 1 tile forward
       cancelAnimationFrame(animation);
       position = 0;
     }
@@ -461,6 +538,7 @@ function animateBoard() {
   }
 }
 
+//Display name of character in canvas
 function displayNext(player) {
   if(canvas.getContext) {
     context.clearRect(0, 0, canvas.width, canvas.height);
