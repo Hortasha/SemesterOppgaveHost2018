@@ -1,13 +1,13 @@
 @font-face {
   font-family: Thrones;
-  src: url(GameofThrones.ttf);
+  src: url(./fonts/GameofThrones.ttf);
 }
 body, html {
   height: 100%;
 }
 
 .background {
-  background-image: url("background.jpg");
+  background-image: url("./images/background.jpg");
   background-position: top;
   background-repeat: no-repeat;
   background-size: cover;
@@ -34,15 +34,18 @@ body, html {
   font-family: Thrones, Arial, Arial;
   padding: 20px 0 10px;
 }
+
 .index__underTitle {
   font-family: Arial;
   padding: 20px 0 10px;
   font-size: 30px;
   text-shadow: 2px 2px 3px #fff;
 }
+
 .index__section--split {
   padding-bottom: 50px;
 }
+
 .index__button--start {
   padding: 10px 30px;
   margin-top: 10px;
@@ -51,9 +54,11 @@ body, html {
   border-radius: 10px;
   background-color: #554cff;
 }
+
 .index__button--start:hover {
   background-color: #2519ff;
 }
+
 .index__button--lobby {
   border: none;
   cursor: pointer;
@@ -65,6 +70,7 @@ body, html {
   margin-top: 10px;
   border-radius: 10px;
 }
+
 .index__joinGame {
   border-radius: 10px;
   padding: 1px 20px;
@@ -72,6 +78,7 @@ body, html {
   margin: 0 auto;
   background-color: rgba(200, 200, 200, 0.6);
 }
+
 .index__serverList {
   background-color: #404040;
   margin: 0;
@@ -79,6 +86,7 @@ body, html {
   margin-bottom: 20px;
   padding: 10px;
 }
+
 .index__error {
   color: #ff3232;
 }
@@ -87,11 +95,13 @@ body, html {
   font-family: Thrones, Arial, Arial;
   padding: 20px 0 10px;
 }
+
 .lobby__underTitle {
   font-family: Arial;
   padding: 20px 0 10px;
   font-size: 30px;
 }
+
 .lobby__button--start {
   padding: 10px 30px;
   margin-top: 10px;
@@ -100,9 +110,11 @@ body, html {
   border-radius: 10px;
   background-color: #554cff;
 }
+
 .lobby__button--start:hover {
   background-color: #2519ff;
 }
+
 .lobby__button--character {
   border: none;
   cursor: pointer;
@@ -114,6 +126,7 @@ body, html {
   margin-bottom: 30px;
   border-radius: 10px;
 }
+
 .lobby__backgroundContainer {
   background-color: rgba(200, 200, 200, 0.6);
   border-radius: 10px;
@@ -125,18 +138,21 @@ body, html {
   padding: 20px 0 10px;
   text-align: center;
 }
+
 .game__underTitle {
   font-family: Arial;
   padding: 20px 0 10px;
   font-size: 30px;
   text-align: center;
 }
+
 .game__normalTitle {
   font-family: Arial;
   padding: 20px 0 10px;
   font-size: 20px;
   text-align: center;
 }
+
 .game__button--roll {
   padding: 10px 30px;
   margin-top: 10px;
@@ -147,13 +163,16 @@ body, html {
   margin-right: 20px;
   background-color: #554cff;
 }
+
 .game__button--roll:hover {
   background-color: #2519ff;
 }
+
 .game__button--align {
   float: right;
   margin-top: 100px !important;
 }
+
 .game__button--rollInactive {
   padding: 10px 30px;
   margin-top: 10px;
@@ -163,6 +182,7 @@ body, html {
   border-radius: 10px;
   margin-right: 20px;
 }
+
 .game__rollDisplay {
   padding: 15px 0;
   background-color: rgba(200, 200, 200, 0.6);
@@ -170,25 +190,35 @@ body, html {
   width: 85px;
   text-align: center;
 }
+
 .game__rollValue {
   font-size: 3rem;
 }
+
 .game__row {
   margin-bottom: 30px;
   text-align: left;
 }
+
 .game__rowEnd {
   text-align: left;
 }
+
 .game__background {
   background-color: rgba(200, 200, 200, 0.6);
   border-radius: 20px;
   padding-bottom: 10px;
 }
+
 .game__player {
   height: 50px;
   width: 50px;
   margin-top: -5px;
 }
+
+/*# sourceMappingURL=style.css.map */
+/*# sourceMappingURL=style.scss.map */
+/*# sourceMappingURL=style.css.map */
+/*# sourceMappingURL=style.scss.map */
 
 /*# sourceMappingURL=style.css.map */

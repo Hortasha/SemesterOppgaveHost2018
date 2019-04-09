@@ -1,5 +1,0 @@
-Presentation:
-Lysbildeoverganger
-
-Code comments:
-Enkle linjer comments der det trengs.

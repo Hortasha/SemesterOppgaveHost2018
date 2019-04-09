@@ -10,6 +10,7 @@ var server = app.listen(port, function() {
 });
 var io = socket(server);
 
+
 //static file
 app.use(express.static('public'));
 
@@ -312,7 +313,7 @@ io.on('connection', function(socket) {
  class Character {
    constructor(name, icon, sex, aliases) {
      this.name = name;
-     this.icon = icon;
+     this.icon = './images/'+icon;
      this.sex = sex;
      this.aliases = aliases;
 
