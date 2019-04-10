@@ -1,7 +1,7 @@
 require('isomorphic-fetch');
 
 //Setup
-var port = 3000;
+var port = 3001;
 var express = require('express');
 var socket = require('socket.io');
 var app = express();
